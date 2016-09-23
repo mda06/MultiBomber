@@ -27,6 +27,20 @@ public class ReadyRoomSync extends BaseSync {
 		ServerMessages.serverIncomming.add(name + "(" + list.entityID + ") is" + (list.isReady ? "" : " not") + " ready.");	
 		ServerMessages.serverInfo.add("There are actually " + server.getEngine().getSystem(EntitySystem.class).getEntities().size() + " players in the room.");
 		server.getServer().sendToAllTCP(list);
+		
+		
+		//Check if everybody is ready for the game
+		boolean readyForGame = true;
+		for(Entity entity : server.getEngine().getSystem(EntitySystem.class).getEntities().values()) {
+			if(!entity.getAs(ReadyRoomComponent.class).isReady) {
+				readyForGame = false;
+				break;	
+			}
+		}
+		
+		//If everybody is ready launch the game
+		if(readyForGame) 
+			new ReadyGameSync().handleServer(server, connection);
 	}
 	@Override
 	public void handleClient(MyClient client, Connection connection) {}

@@ -25,6 +25,7 @@ import com.mda.bomb.screen.event.RoomListener;
 
 public class RoomScreen implements Screen, RoomListener {
 
+	@SuppressWarnings("unused")
 	private MultiBomberMain main;
 	private MyClient clientSide;
 

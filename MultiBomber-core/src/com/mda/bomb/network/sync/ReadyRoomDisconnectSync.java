@@ -23,6 +23,10 @@ public class ReadyRoomDisconnectSync extends BaseSync{
 		
 		((EntitySystem) server.getEngine().getSystem(EntitySystem.class)).removeEntity(entityID);	
 		ServerMessages.serverInfo.add("There are actually " + server.getEngine().getSystem(EntitySystem.class).getEntities().size() + " players in the room.");
+		if(server.getEngine().getSystem(EntitySystem.class).getEntities().size() == 0) {
+			server.getEngine().setGameStarted(false);
+			ServerMessages.serverInfo.add("No players anymore in the game. The game is finished and people can again connect to the room.");
+		}
 		server.getServer().sendToAllExceptTCP(connection.getID(), this);
 	}
 	

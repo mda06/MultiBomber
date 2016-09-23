@@ -16,6 +16,7 @@ import com.mda.bomb.ecs.core.EntitySystem;
 import com.mda.bomb.network.sync.BaseSync;
 import com.mda.bomb.network.sync.EnterRoomSync;
 import com.mda.bomb.network.sync.EntitySync;
+import com.mda.bomb.network.sync.ReadyGameSync;
 import com.mda.bomb.network.sync.ReadyRoomDisconnectSync;
 import com.mda.bomb.network.sync.ReadyRoomListenerSync;
 import com.mda.bomb.network.sync.ReadyRoomSync;
@@ -44,6 +45,7 @@ public class MyServer extends Listener{
 		kryo.register(ReadyRoomSync.class);
 		kryo.register(ReadyRoomListenerSync.class);
 		kryo.register(ReadyRoomDisconnectSync.class);
+		kryo.register(ReadyGameSync.class);
 		
 		try {
 			server.bind(Constants.PORT_TCP, Constants.PORT_UDP);

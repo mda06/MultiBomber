@@ -16,11 +16,13 @@ import com.mda.bomb.ecs.core.EntitySystem;
 import com.mda.bomb.network.sync.BaseSync;
 import com.mda.bomb.network.sync.EnterRoomSync;
 import com.mda.bomb.network.sync.EntitySync;
+import com.mda.bomb.network.sync.ReadyGameSync;
 import com.mda.bomb.network.sync.ReadyRoomDisconnectSync;
 import com.mda.bomb.network.sync.ReadyRoomListenerSync;
 import com.mda.bomb.network.sync.ReadyRoomSync;
 import com.mda.bomb.screen.event.DisconnectedListener;
 import com.mda.bomb.screen.event.EnterRoomListener;
+import com.mda.bomb.screen.event.GameListener;
 import com.mda.bomb.screen.event.RoomListener;
 import com.mda.bomb.util.Constants;
 
@@ -30,6 +32,7 @@ public class MyClient extends Listener {
 	private EnterRoomListener enterRoomListener;
 	private RoomListener roomListener;
 	private DisconnectedListener disconnectedListener;
+	private GameListener gameListener;
 
 	private int entityID;
 	private Engine engine;
@@ -50,6 +53,7 @@ public class MyClient extends Listener {
 		kryo.register(ReadyRoomSync.class);
 		kryo.register(ReadyRoomListenerSync.class);
 		kryo.register(ReadyRoomDisconnectSync.class);
+		kryo.register(ReadyGameSync.class);
 
 		initEngine();
 	}
@@ -75,8 +79,20 @@ public class MyClient extends Listener {
 		disconnectedListener = list;
 	}
 	
+	public DisconnectedListener getDisconnectedListener() {
+		return disconnectedListener;
+	}
+	
 	public RoomListener getRoomListener() {
 		return roomListener;
+	}
+	
+	public void setGameListener(GameListener list) {
+		gameListener = list;
+	}
+	
+	public GameListener getGameListener() {
+		return gameListener;
 	}
 
 	public void connect(final String ipAdress) {

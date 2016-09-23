@@ -6,9 +6,11 @@ import java.util.Map.Entry;
 
 public class Engine {
 	private HashMap<Class<?>, BaseSystem> systems;
+	private boolean isGameStarted;
 
 	public Engine() {
 		systems = new HashMap<Class<?>, BaseSystem>();
+		isGameStarted = false;
 	}
 	
 	public void addSystem(BaseSystem bs) {
@@ -25,6 +27,9 @@ public class Engine {
 	}
 
 	public void update(float dt) {
+		//Don't update the engine of the game is not started
+		if(!isGameStarted) return;
+		
 		EntitySystem es = getSystem(EntitySystem.class);
 		if (es == null)
 			throw new Error("No EntitySystem was found in the Engine. Add a EntitySystem to the Engine.");
@@ -36,6 +41,14 @@ public class Engine {
 				pair.getValue().update(dt, entity);
 			}
 		}
+	}
+	
+	public void setGameStarted(boolean s) {
+		isGameStarted = s;
+	}
+	
+	public boolean isGameStarted() {
+		return isGameStarted;
 	}
 
 }

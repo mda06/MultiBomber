@@ -15,6 +15,15 @@ public class EnterRoomSync extends BaseSync {
 	
 	@Override
 	public void handleServer(MyServer server, Connection connection) {
+		//TODO
+		//Check if the game has begun, if true refuse the connection
+		if(server.getEngine().isGameStarted()) {
+			ServerMessages.serverInfo.add("Connection " + connectionID + " try to connect the room but the game is already launched. Connection rejected");
+			entityID = -1;
+			server.getServer().sendToTCP(connection.getID(), this);
+			return;
+		}
+		
 		Entity e = new Entity(connection.getID());
 		e.addComponent(new ReadyRoomComponent(false));
 		e.addComponent(new NameComponent("Undefined"));
@@ -35,6 +44,13 @@ public class EnterRoomSync extends BaseSync {
 	
 	@Override
 	public void handleClient(MyClient client, Connection connection) {
+		//The game is already begin, disconnect the current player
+		//TODO: Create a wait-room for the next round
+		if(entityID == -1) {
+			client.getDisconnectedListener().disconnectedFromServer();
+			return;
+		}
+		
 		Entity e = new Entity(entityID);
 		e.addComponent(new ReadyRoomComponent(false));
 		e.addComponent(new NameComponent("Undefined"));

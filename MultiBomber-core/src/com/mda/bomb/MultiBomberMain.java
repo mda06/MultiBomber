@@ -29,6 +29,7 @@ public class MultiBomberMain extends Game implements OpenServerListener{
 		connectScreen.setOpenServerListener(this);
 		serverScreen = new ServerScreen(this);
 		gameScreen = new GameScreen(this);
+		clientSide.setGameListener(gameScreen);
 		
 		setScreen(getConnectScreen());
 	}

@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map.Entry;
 
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+
 public class Engine {
 	private HashMap<Class<?>, BaseSystem> systems;
 	private boolean isGameStarted;
@@ -39,6 +41,22 @@ public class Engine {
 			while (it.hasNext()) {
 				Entry<Class<?>, BaseSystem> pair = it.next();
 				pair.getValue().update(dt, entity);
+			}
+		}
+	}
+	
+	public void render(SpriteBatch batch) {
+		//Don't render the game if it's not started
+		if(!isGameStarted) return;
+		
+		for (Entity entity : getSystem(EntitySystem.class).getEntities().values()) {
+			Iterator<Entry<Class<?>, BaseSystem>> it = systems.entrySet().iterator();
+			while (it.hasNext()) {
+				Entry<Class<?>, BaseSystem> pair = it.next();
+				if(pair instanceof RenderSystem) {
+					RenderSystem render = (RenderSystem) pair;
+					render.render(entity, batch);
+				}
 			}
 		}
 	}

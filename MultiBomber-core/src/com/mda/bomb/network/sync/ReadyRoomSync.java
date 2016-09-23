@@ -19,7 +19,7 @@ public class ReadyRoomSync extends BaseSync {
 		Entity e = server.getEntityWithID(entityID);
 		e.addComponent(new NameComponent(name));
 		e.getAs(ReadyRoomComponent.class).isReady = true;
-		//Sprite...
+		
 		ReadyRoomListenerSync list = new ReadyRoomListenerSync();
 		list.entityID = entityID;
 		list.isReady = true;
@@ -43,5 +43,7 @@ public class ReadyRoomSync extends BaseSync {
 			new ReadyGameSync().handleServer(server, connection);
 	}
 	@Override
-	public void handleClient(MyClient client, Connection connection) {}
+	public void handleClient(MyClient client, Connection connection) {
+		
+	}
 }

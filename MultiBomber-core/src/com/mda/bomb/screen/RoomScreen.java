@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.Animation.PlayMode;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.ButtonGroup;
@@ -14,10 +15,14 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextArea;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.mda.bomb.MultiBomberMain;
+import com.mda.bomb.ecs.components.AnimationComponent;
 import com.mda.bomb.ecs.components.NameComponent;
+import com.mda.bomb.ecs.components.PositionComponent;
 import com.mda.bomb.ecs.components.ReadyRoomComponent;
 import com.mda.bomb.ecs.core.Entity;
 import com.mda.bomb.ecs.core.EntitySystem;
+import com.mda.bomb.ecs.core.SimpleAnimationEntity;
+import com.mda.bomb.ecs.systems.AnimationSystem;
 import com.mda.bomb.network.MyClient;
 import com.mda.bomb.network.sync.ReadyRoomListenerSync;
 import com.mda.bomb.network.sync.ReadyRoomSync;
@@ -37,6 +42,9 @@ public class RoomScreen implements Screen, RoomListener {
 	private Label lblPlayers;
 	private TextArea txtPlayers;
 	private CheckBox btnReady;
+	
+	private SimpleAnimationEntity anim1, anim2;
+	private AnimationSystem anim;
 
 	public RoomScreen(MultiBomberMain m, MyClient client) {
 		main = m;
@@ -45,6 +53,17 @@ public class RoomScreen implements Screen, RoomListener {
 		batch = new SpriteBatch();
 
 		initStage();
+		initAnims();
+	}
+	
+	private void initAnims() {
+		float x = Gdx.graphics.getWidth() / 4 - 30, y = Gdx.graphics.getHeight() / 1.4f - 120;
+		anim1 = new SimpleAnimationEntity(new PositionComponent(x, y), new AnimationComponent(8, "Sprites/Bomberman/Front/Bman_F_f0"));
+		anim1.ac.animation.setPlayMode(PlayMode.LOOP);
+		x = (float) (Gdx.graphics.getWidth() / 4) * 3 - 30;
+		anim2 = new SimpleAnimationEntity(new PositionComponent(x, y), new AnimationComponent(6, "Sprites/Creep/Front/Creep_F_f0"));
+		anim2.ac.animation.setPlayMode(PlayMode.LOOP);
+		anim = new AnimationSystem();
 	}
 
 	private void initStage() {
@@ -132,6 +151,9 @@ public class RoomScreen implements Screen, RoomListener {
 		txtName.setDisabled(btnReady.isChecked());
 		btnSprite1.setDisabled(btnReady.isChecked());
 		btnSprite2.setDisabled(btnReady.isChecked());
+		
+		anim.update(dt, anim1);
+		anim.update(dt, anim2);
 	}
 
 	public void render(float delta) {
@@ -148,11 +170,18 @@ public class RoomScreen implements Screen, RoomListener {
 		} catch(IndexOutOfBoundsException io) {
 			io.printStackTrace();
 		}
+		
+		batch.begin();
+		anim.render(anim1, batch);
+		anim.render(anim2, batch);
+		batch.end();
 	}
 
 	public void dispose() {
 		batch.dispose();
 		stage.dispose();
+		anim1.ac.dispose();
+		anim2.ac.dispose();
 	}
 
 	public void show() {

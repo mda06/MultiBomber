@@ -14,6 +14,6 @@ public class NameSystem extends BaseSystem {
 		name = e.getAs(NameComponent.class);
 		if(pc == null || name == null) return;
 		
-		System.out.println(name.name + " is at " + pc.x + "/" + pc.y + " with angle of " + pc.degrees + " °");
+		System.out.println(name.name + " is at " + pc.x + "/" + pc.y);
 	}
 }

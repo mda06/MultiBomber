@@ -16,6 +16,5 @@ public class MovementSystem extends BaseSystem {
 		
 		pc.x += mc.velX * dt;
 		pc.y += mc.velY * dt;
-		pc.degrees += dt;
 	}
 }

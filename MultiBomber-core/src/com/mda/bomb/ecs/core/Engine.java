@@ -53,8 +53,8 @@ public class Engine {
 			Iterator<Entry<Class<?>, BaseSystem>> it = systems.entrySet().iterator();
 			while (it.hasNext()) {
 				Entry<Class<?>, BaseSystem> pair = it.next();
-				if(pair instanceof RenderSystem) {
-					RenderSystem render = (RenderSystem) pair;
+				if(pair.getValue() instanceof RenderSystem) {
+					RenderSystem render = (RenderSystem) pair.getValue();
 					render.render(entity, batch);
 				}
 			}

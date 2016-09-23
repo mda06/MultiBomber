@@ -3,8 +3,8 @@ package com.mda.bomb.screen;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.Animation.PlayMode;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.ButtonGroup;
@@ -15,17 +15,15 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextArea;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.mda.bomb.MultiBomberMain;
-import com.mda.bomb.ecs.components.AnimationComponent;
 import com.mda.bomb.ecs.components.NameComponent;
-import com.mda.bomb.ecs.components.PositionComponent;
 import com.mda.bomb.ecs.components.ReadyRoomComponent;
+import com.mda.bomb.ecs.components.SpriteComponent;
 import com.mda.bomb.ecs.core.Entity;
 import com.mda.bomb.ecs.core.EntitySystem;
-import com.mda.bomb.ecs.core.SimpleAnimationEntity;
-import com.mda.bomb.ecs.systems.AnimationSystem;
+import com.mda.bomb.entity.animation.AnimationFactory;
+import com.mda.bomb.entity.animation.SimpleAnimation;
 import com.mda.bomb.network.MyClient;
 import com.mda.bomb.network.sync.ReadyRoomListenerSync;
-import com.mda.bomb.network.sync.ReadyRoomSync;
 import com.mda.bomb.screen.event.RoomListener;
 
 public class RoomScreen implements Screen, RoomListener {
@@ -43,8 +41,7 @@ public class RoomScreen implements Screen, RoomListener {
 	private TextArea txtPlayers;
 	private CheckBox btnReady;
 	
-	private SimpleAnimationEntity anim1, anim2;
-	private AnimationSystem anim;
+	private SimpleAnimation anim1, anim2;
 
 	public RoomScreen(MultiBomberMain m, MyClient client) {
 		main = m;
@@ -57,13 +54,10 @@ public class RoomScreen implements Screen, RoomListener {
 	}
 	
 	private void initAnims() {
-		float x = Gdx.graphics.getWidth() / 4 - 30, y = Gdx.graphics.getHeight() / 1.4f - 120;
-		anim1 = new SimpleAnimationEntity(new PositionComponent(x, y), new AnimationComponent(8, "Sprites/Bomberman/Front/Bman_F_f0"));
-		anim1.ac.animation.setPlayMode(PlayMode.LOOP);
-		x = (float) (Gdx.graphics.getWidth() / 4) * 3 - 30;
-		anim2 = new SimpleAnimationEntity(new PositionComponent(x, y), new AnimationComponent(6, "Sprites/Creep/Front/Creep_F_f0"));
-		anim2.ac.animation.setPlayMode(PlayMode.LOOP);
-		anim = new AnimationSystem();
+		anim1 = AnimationFactory.getSimpleAnimationOfSpriteNb(1);
+		anim1.getAnimation().setPlayMode(PlayMode.LOOP);
+		anim2 = AnimationFactory.getSimpleAnimationOfSpriteNb(2);
+		anim2.getAnimation().setPlayMode(PlayMode.LOOP);
 	}
 
 	private void initStage() {
@@ -74,7 +68,7 @@ public class RoomScreen implements Screen, RoomListener {
 		lblName.setCenterPosition(Gdx.graphics.getWidth() / 2 - 150, Gdx.graphics.getHeight() / 1.1f);
 		stage.addActor(lblName);
 
-		txtName = new TextField("", skin);
+		txtName = new TextField("Undefined", skin);
 		txtName.setCenterPosition(Gdx.graphics.getWidth() / 2, Gdx.graphics.getHeight() / 1.1f);
 		stage.addActor(txtName);
 
@@ -108,21 +102,13 @@ public class RoomScreen implements Screen, RoomListener {
 					btnReady.setChecked(false);
 					return;
 				}
-				if (!btnReady.isChecked()) {
-					ReadyRoomListenerSync sync = new ReadyRoomListenerSync();
-					sync.entityID = clientSide.getEntityID();
-					sync.isReady = false;
-					sync.name = txtName.getText();
-					clientSide.getMyEntity().getAs(NameComponent.class).name = sync.name;
-					clientSide.sendTCP(sync);
-					return;
-				}
-
-				ReadyRoomSync sync = new ReadyRoomSync();
+				
+				ReadyRoomListenerSync sync = new ReadyRoomListenerSync();
 				sync.entityID = clientSide.getEntityID();
+				sync.isReady = btnReady.isChecked();
 				sync.name = txtName.getText();
 				sync.selectedSprite = btnSprite1.isChecked() ? 1 : 2;
-				clientSide.getMyEntity().addComponent(new NameComponent(sync.name));
+				clientSide.getMyEntity().getAs(NameComponent.class).name = sync.name;
 				clientSide.sendTCP(sync);
 			}
 		});
@@ -138,11 +124,13 @@ public class RoomScreen implements Screen, RoomListener {
 		
 			NameComponent nc = e.getAs(NameComponent.class);
 			ReadyRoomComponent rrc = e.getAs(ReadyRoomComponent.class);
+			SpriteComponent sc = e.getAs(SpriteComponent.class);
 
 			String name = nc == null ? "Undefined" : nc.name;
 			boolean isReady = rrc == null ? false : rrc.isReady;
-
-			str += "-" + name + "(" + e.getID() + ") is " + (isReady ? "" : "not") + " ready\n";
+			String spriteIndex = sc == null ? ", no SpriteComp," : (", sprite n°" + sc.ID + ",");
+			
+			str += "-" + name + "(" + e.getID() + ")" + spriteIndex + " is " + (isReady ? "" : "not") + " ready\n";
 		}
 		txtPlayers.setText(str);
 	}
@@ -152,8 +140,8 @@ public class RoomScreen implements Screen, RoomListener {
 		btnSprite1.setDisabled(btnReady.isChecked());
 		btnSprite2.setDisabled(btnReady.isChecked());
 		
-		anim.update(dt, anim1);
-		anim.update(dt, anim2);
+		anim1.update(dt);
+		anim2.update(dt);
 	}
 
 	public void render(float delta) {
@@ -167,21 +155,23 @@ public class RoomScreen implements Screen, RoomListener {
 			batch.begin();
 			stage.draw();
 			batch.end();
-		} catch(IndexOutOfBoundsException io) {
-			io.printStackTrace();
+		} catch(Exception ex) {
+			ex.printStackTrace();
 		}
-		
+
+		float x = Gdx.graphics.getWidth() / 4 - 30, y = Gdx.graphics.getHeight() / 1.4f - 120;
 		batch.begin();
-		anim.render(anim1, batch);
-		anim.render(anim2, batch);
+		batch.draw(anim1.getCurrentFrame(), x, y);
+		x = (float) (Gdx.graphics.getWidth() / 4) * 3 - 30;
+		batch.draw(anim2.getCurrentFrame(), x, y);
 		batch.end();
 	}
 
 	public void dispose() {
 		batch.dispose();
 		stage.dispose();
-		anim1.ac.dispose();
-		anim2.ac.dispose();
+		anim1.dispose();
+		anim2.dispose();
 	}
 
 	public void show() {

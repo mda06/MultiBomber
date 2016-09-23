@@ -17,12 +17,12 @@ public class ReadyGameSync extends BaseSync {
 
 	@Override
 	public void handleClient(MyClient client, Connection connection) {
+		client.getEngine().setGameStarted(true);
+		
 		if(client.getGameListener() != null)
 			client.getGameListener().startGame();
 		else
 			throw new Error("No GameListener in the client. Can't play the game.");
-		
-		client.getEngine().setGameStarted(true);
 	}
 
 }

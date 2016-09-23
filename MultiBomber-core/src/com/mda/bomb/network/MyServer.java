@@ -19,7 +19,6 @@ import com.mda.bomb.network.sync.EntitySync;
 import com.mda.bomb.network.sync.ReadyGameSync;
 import com.mda.bomb.network.sync.ReadyRoomDisconnectSync;
 import com.mda.bomb.network.sync.ReadyRoomListenerSync;
-import com.mda.bomb.network.sync.ReadyRoomSync;
 import com.mda.bomb.util.Constants;
 
 public class MyServer extends Listener{
@@ -42,7 +41,6 @@ public class MyServer extends Listener{
 		kryo = server.getKryo();
 		kryo.register(EntitySync.class);
 		kryo.register(EnterRoomSync.class);
-		kryo.register(ReadyRoomSync.class);
 		kryo.register(ReadyRoomListenerSync.class);
 		kryo.register(ReadyRoomDisconnectSync.class);
 		kryo.register(ReadyGameSync.class);

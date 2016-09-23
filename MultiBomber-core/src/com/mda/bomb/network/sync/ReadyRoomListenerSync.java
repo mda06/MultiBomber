@@ -3,6 +3,7 @@ package com.mda.bomb.network.sync;
 import com.esotericsoftware.kryonet.Connection;
 import com.mda.bomb.ecs.components.NameComponent;
 import com.mda.bomb.ecs.components.ReadyRoomComponent;
+import com.mda.bomb.ecs.components.SpriteComponent;
 import com.mda.bomb.ecs.core.Entity;
 import com.mda.bomb.ecs.core.EntitySystem;
 import com.mda.bomb.network.MyClient;
@@ -11,16 +12,32 @@ import com.mda.bomb.network.ServerMessages;
 
 public class ReadyRoomListenerSync extends BaseSync {
 	public int entityID;
+	public int selectedSprite;
 	public boolean isReady;
 	public String name;
 
 	@Override
 	public void handleServer(MyServer server, Connection connection) {
 		Entity e = server.getEntityWithID(entityID);
+		e.getAs(NameComponent.class).name = name;
 		e.getAs(ReadyRoomComponent.class).isReady = isReady;
-		ServerMessages.serverIncomming.add(name + "(" + entityID + ") is" + (isReady ? "" : " not") + " ready.");
+		e.getAs(SpriteComponent.class).ID = selectedSprite;
+		ServerMessages.serverIncomming.add(name + "(" + entityID + "), sprite n°" + selectedSprite + ", is" + (isReady ? "" : " not") + " ready.");
 		ServerMessages.serverInfo.add("There are actually " + server.getEngine().getSystem(EntitySystem.class).getEntities().size() + " players in the room.");
 		server.getServer().sendToAllExceptTCP(connection.getID(), this);
+		
+		//Check if everybody is ready for the game
+		boolean readyForGame = true;
+		for(Entity entity : server.getEngine().getSystem(EntitySystem.class).getEntities().values()) {
+			if(!entity.getAs(ReadyRoomComponent.class).isReady) {
+				readyForGame = false;
+				break;	
+			}
+		}
+		
+		//If everybody is ready launch the game
+		if(readyForGame) 
+			new ReadyGameSync().handleServer(server, connection);
 	}
 	@Override
 	public void handleClient(MyClient client, Connection connection) {
@@ -37,6 +54,12 @@ public class ReadyRoomListenerSync extends BaseSync {
 			e.getAs(NameComponent.class).name = name;
 		else {
 			e.addComponent(new NameComponent(name));
+		}
+		
+		if (e.getAs(SpriteComponent.class) != null)
+			e.getAs(SpriteComponent.class).ID = selectedSprite;
+		else {
+			e.addComponent(new SpriteComponent(selectedSprite));
 		}
 		
 		if(client.getRoomListener() != null) 

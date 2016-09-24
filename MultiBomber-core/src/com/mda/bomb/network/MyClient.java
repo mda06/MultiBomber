@@ -10,10 +10,12 @@ import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryonet.Client;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
+import com.mda.bomb.ecs.components.DirectionComponent;
 import com.mda.bomb.ecs.core.Engine;
 import com.mda.bomb.ecs.core.Entity;
 import com.mda.bomb.ecs.core.EntitySystem;
 import com.mda.bomb.network.sync.BaseSync;
+import com.mda.bomb.network.sync.DirectionSync;
 import com.mda.bomb.network.sync.EnterRoomSync;
 import com.mda.bomb.network.sync.EntitySync;
 import com.mda.bomb.network.sync.ReadyGameSync;
@@ -52,6 +54,9 @@ public class MyClient extends Listener {
 		kryo.register(ReadyRoomListenerSync.class);
 		kryo.register(ReadyRoomDisconnectSync.class);
 		kryo.register(ReadyGameSync.class);
+		kryo.register(DirectionComponent.class);
+		kryo.register(DirectionComponent.Direction.class);
+		kryo.register(DirectionSync.class);
 
 		initEngine();
 	}

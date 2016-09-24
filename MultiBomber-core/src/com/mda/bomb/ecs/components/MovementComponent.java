@@ -6,6 +6,6 @@ public class MovementComponent extends Component {
 	public float velX, velY;
 	
 	public MovementComponent() {
-		velX = velY = 0;
+		velX = velY = 150;
 	}
 }

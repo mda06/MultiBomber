@@ -24,7 +24,7 @@ public class ReadyRoomListenerSync extends BaseSync {
 		e.getAs(SpriteComponent.class).ID = selectedSprite;
 		ServerMessages.serverIncomming.add(name + "(" + entityID + "), sprite n°" + selectedSprite + ", is" + (isReady ? "" : " not") + " ready.");
 		ServerMessages.serverInfo.add("There are actually " + server.getEngine().getSystem(EntitySystem.class).getEntities().size() + " players in the room.");
-		server.getServer().sendToAllExceptTCP(connection.getID(), this);
+		server.getServer().sendToAllTCP(this);
 		
 		//Check if everybody is ready for the game
 		boolean readyForGame = true;

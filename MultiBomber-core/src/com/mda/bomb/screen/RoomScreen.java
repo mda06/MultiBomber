@@ -155,16 +155,17 @@ public class RoomScreen implements Screen, RoomListener {
 			batch.begin();
 			stage.draw();
 			batch.end();
+	
+			float x = Gdx.graphics.getWidth() / 4 - 30, y = Gdx.graphics.getHeight() / 1.4f - 120;
+			batch.begin();
+			batch.draw(anim1.getCurrentFrame(), x, y);
+			x = (float) (Gdx.graphics.getWidth() / 4) * 3 - 30;
+			batch.draw(anim2.getCurrentFrame(), x, y);
+			batch.end();
+			
 		} catch(Exception ex) {
 			ex.printStackTrace();
 		}
-
-		float x = Gdx.graphics.getWidth() / 4 - 30, y = Gdx.graphics.getHeight() / 1.4f - 120;
-		batch.begin();
-		batch.draw(anim1.getCurrentFrame(), x, y);
-		x = (float) (Gdx.graphics.getWidth() / 4) * 3 - 30;
-		batch.draw(anim2.getCurrentFrame(), x, y);
-		batch.end();
 	}
 
 	public void dispose() {

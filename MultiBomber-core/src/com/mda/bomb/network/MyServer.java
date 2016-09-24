@@ -10,10 +10,13 @@ import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
 import com.esotericsoftware.kryonet.Server;
+import com.mda.bomb.ecs.components.DirectionComponent;
+import com.mda.bomb.ecs.components.PositionComponent;
 import com.mda.bomb.ecs.core.Engine;
 import com.mda.bomb.ecs.core.Entity;
 import com.mda.bomb.ecs.core.EntitySystem;
 import com.mda.bomb.network.sync.BaseSync;
+import com.mda.bomb.network.sync.DirectionSync;
 import com.mda.bomb.network.sync.EnterRoomSync;
 import com.mda.bomb.network.sync.EntitySync;
 import com.mda.bomb.network.sync.ReadyGameSync;
@@ -44,6 +47,9 @@ public class MyServer extends Listener{
 		kryo.register(ReadyRoomListenerSync.class);
 		kryo.register(ReadyRoomDisconnectSync.class);
 		kryo.register(ReadyGameSync.class);
+		kryo.register(DirectionComponent.class);
+		kryo.register(DirectionComponent.Direction.class);
+		kryo.register(DirectionSync.class);
 		
 		try {
 			server.bind(Constants.PORT_TCP, Constants.PORT_UDP);
@@ -56,6 +62,18 @@ public class MyServer extends Listener{
 	
 	public void updateEngine(float dt) {
 		engine.update(dt);
+		if(engine.isGameStarted())
+			updateEntitiesInGame(dt);
+	}
+	
+	private void updateEntitiesInGame(float dt) {
+		for (Entity entity : engine.getSystem(EntitySystem.class).getEntities().values()) {
+			EntitySync sync = new EntitySync();
+			sync.entityID = entity.getID();
+			sync.posX = entity.getAs(PositionComponent.class).x;
+			sync.posY = entity.getAs(PositionComponent.class).y;
+			server.sendToAllTCP(sync);
+		}
 	}
 	
 	@Override

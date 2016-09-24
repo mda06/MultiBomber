@@ -3,14 +3,17 @@ package com.mda.bomb.screen;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.mda.bomb.MultiBomberMain;
 import com.mda.bomb.ecs.components.DirectionComponent;
+import com.mda.bomb.ecs.components.PositionComponent;
 import com.mda.bomb.ecs.components.SpriteComponent;
 import com.mda.bomb.ecs.core.Entity;
 import com.mda.bomb.ecs.core.EntitySystem;
 import com.mda.bomb.ecs.systems.InputSystem;
 import com.mda.bomb.ecs.systems.SpriteSystem;
+import com.mda.bomb.map.Map;
 import com.mda.bomb.network.sync.DirectionSync;
 import com.mda.bomb.screen.event.ChangeDirectionListener;
 import com.mda.bomb.screen.event.GameListener;
@@ -18,13 +21,20 @@ import com.mda.bomb.screen.event.GameListener;
 public class GameScreen implements Screen, GameListener, ChangeDirectionListener {
 
 	private MultiBomberMain main;
+	
+	private OrthographicCamera cam;
 	private SpriteBatch batch;
 	private boolean hasInitGameOnFirstUpdate;
+	private Map map;
 	
 	public GameScreen(MultiBomberMain m) {
 		main = m;
 		batch = new SpriteBatch();
+		cam = new OrthographicCamera(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+		cam.update();
 		hasInitGameOnFirstUpdate = false;
+		map = new Map();
+		map.initMap();
 	}
 	
 	private void update(float dt) {
@@ -44,6 +54,15 @@ public class GameScreen implements Screen, GameListener, ChangeDirectionListener
 		}
 		
 		main.getClientSide().getEngine().update(dt);
+		updateCam();
+	}
+	
+	public void updateCam() {
+		Entity e = main.getClientSide().getMyEntity();
+		PositionComponent pc = e.getAs(PositionComponent.class);
+		float x = pc.x, y = pc.y;
+		cam.position.set(x, y, 0);
+		cam.update();
 	}
 	
 	public void render(float delta) {
@@ -52,7 +71,9 @@ public class GameScreen implements Screen, GameListener, ChangeDirectionListener
 		Gdx.gl.glClearColor(.8f, .2f, .5f, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
+		batch.setProjectionMatrix(cam.combined);
 		batch.begin();
+		map.render(batch);
 		main.getClientSide().getEngine().render(batch);
 		batch.end();
 	}
@@ -65,6 +86,7 @@ public class GameScreen implements Screen, GameListener, ChangeDirectionListener
 	
 	public void dispose() {
 		batch.dispose();
+		map.dispose();
 	}
 
 	@Override

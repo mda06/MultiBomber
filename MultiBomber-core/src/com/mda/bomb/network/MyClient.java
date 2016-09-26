@@ -1,26 +1,18 @@
 package com.mda.bomb.network;
 
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.NetworkInterface;
-import java.net.SocketException;
-import java.util.Collections;
 
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryonet.Client;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
-import com.mda.bomb.ecs.components.DirectionComponent;
 import com.mda.bomb.ecs.core.Engine;
 import com.mda.bomb.ecs.core.Entity;
 import com.mda.bomb.ecs.core.EntitySystem;
+import com.mda.bomb.map.Map;
 import com.mda.bomb.network.sync.BaseSync;
-import com.mda.bomb.network.sync.DirectionSync;
 import com.mda.bomb.network.sync.EnterRoomSync;
-import com.mda.bomb.network.sync.EntitySync;
-import com.mda.bomb.network.sync.ReadyGameSync;
 import com.mda.bomb.network.sync.ReadyRoomDisconnectSync;
-import com.mda.bomb.network.sync.ReadyRoomListenerSync;
 import com.mda.bomb.screen.event.DisconnectedListener;
 import com.mda.bomb.screen.event.EnterRoomListener;
 import com.mda.bomb.screen.event.GameListener;
@@ -37,6 +29,7 @@ public class MyClient extends Listener {
 
 	private int entityID;
 	private Engine engine;
+	private Map map;
 
 	public MyClient() {
 		client = new Client();
@@ -49,15 +42,10 @@ public class MyClient extends Listener {
 		entityID = -1;
 
 		kryo = client.getKryo();
-		kryo.register(EntitySync.class);
-		kryo.register(EnterRoomSync.class);
-		kryo.register(ReadyRoomListenerSync.class);
-		kryo.register(ReadyRoomDisconnectSync.class);
-		kryo.register(ReadyGameSync.class);
-		kryo.register(DirectionComponent.class);
-		kryo.register(DirectionComponent.Direction.class);
-		kryo.register(DirectionSync.class);
+		KryoRegisters.registerKryo(kryo);
 
+		map = new Map();
+		
 		initEngine();
 	}
 
@@ -155,25 +143,17 @@ public class MyClient extends Listener {
 	public int getEntityID() {
 		return entityID;
 	}
-
-	public Entity getMyEntity() {
-		return ((EntitySystem) engine.getSystem(EntitySystem.class)).getEntity(entityID);
+	
+	public Map getMap() {
+		return map;
 	}
 
-	public String getIP() {
-		try {
-			for (NetworkInterface iface : Collections.list(NetworkInterface.getNetworkInterfaces())) {
-				for (InetAddress address : Collections.list(iface.getInetAddresses())) {
-					if (!address.isLoopbackAddress() && !address.isLinkLocalAddress()) {
-						return address.getHostAddress().trim();
-					}
-				}
-			}
-		} catch (SocketException e) {
-			e.printStackTrace();
-		}
+	public Entity getEntityWithID(int id) {
+		return engine.getSystem(EntitySystem.class).getEntity(id);
+	}
 
-		return "unknown";
+	public Entity getMyEntity() {
+		return engine.getSystem(EntitySystem.class).getEntity(entityID);
 	}
 
 	public void dispose() {

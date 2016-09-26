@@ -3,7 +3,7 @@ package com.mda.bomb.ecs.core;
 import java.util.HashMap;
 
 public class EntitySystem extends BaseSystem {
-	private int currentAvailableID;
+	private static int currentAvailableID;
 	private HashMap<Integer, Entity> entities;
 
 	public EntitySystem() {
@@ -11,9 +11,15 @@ public class EntitySystem extends BaseSystem {
 		entities = new HashMap<Integer, Entity>();
 		Entity.entitySystem = this;
 	}
-
+	
+	//Need to synchronize this method because we multithreading
 	private int getNextAvailableID() {
-		return currentAvailableID++;
+		synchronized (EntitySystem.class) {
+			do { 
+				currentAvailableID++;
+			} while(entities.containsKey(currentAvailableID));
+			return currentAvailableID;
+		}
 	}
 
 	protected void registerEntity(Entity e) {

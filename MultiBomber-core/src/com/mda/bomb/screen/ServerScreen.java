@@ -10,6 +10,7 @@ import com.mda.bomb.MultiBomberMain;
 import com.mda.bomb.network.MyServer;
 import com.mda.bomb.network.ServerMessages;
 import com.mda.bomb.util.Constants;
+import com.mda.bomb.util.IPUtils;
 
 public class ServerScreen implements Screen {
 
@@ -41,7 +42,7 @@ public class ServerScreen implements Screen {
 		Gdx.gl.glClearColor(.5f, .5f, .5f, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 		batch.begin();
-		font.drawMultiLine(batch, "Info server\n   IP : " + server.getIP() + "\n   Port TCP : " + Constants.PORT_TCP + "\n   Port UDP : " + Constants.PORT_UDP, 0, 450);
+		font.drawMultiLine(batch, "Info server\n   IP : " + IPUtils.getMyIP() + "\n   Port TCP : " + Constants.PORT_TCP + "\n   Port UDP : " + Constants.PORT_UDP, 0, 450);
 		int y = 350;
 		font.drawMultiLine(batch, "-------------------------------------\nServer activity", 0, y);
 		y -= 2*font.getLineHeight();

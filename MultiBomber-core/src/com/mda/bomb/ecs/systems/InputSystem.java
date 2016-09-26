@@ -4,17 +4,19 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
 import com.mda.bomb.ecs.components.DirectionComponent;
 import com.mda.bomb.ecs.components.DirectionComponent.Direction;
+import com.mda.bomb.ecs.components.DropBombComponent;
 import com.mda.bomb.ecs.components.InputComponent;
 import com.mda.bomb.ecs.core.BaseSystem;
 import com.mda.bomb.ecs.core.Entity;
-import com.mda.bomb.screen.event.ChangeDirectionListener;
+import com.mda.bomb.screen.event.GameListener;
 
 public class InputSystem extends BaseSystem {
 
 	private DirectionComponent dc;
-	private ChangeDirectionListener listener;
+	private DropBombComponent bombComp;
+	private GameListener listener;
 	
-	public InputSystem(ChangeDirectionListener list) {
+	public InputSystem(GameListener list) {
 		this.listener = list;
 	}
 	
@@ -35,6 +37,15 @@ public class InputSystem extends BaseSystem {
 			dc.direction = newDirection;
 			if(listener != null)
 				listener.directionChanged(e);
+		}
+		
+		if(Gdx.input.isKeyJustPressed(Keys.SPACE)) {
+			bombComp = e.getAs(DropBombComponent.class);
+			if(bombComp != null) {
+				if(bombComp.nbOfBombs > 0) {
+					listener.dropBomb(e);
+				}
+			}
 		}
 	}
 }

@@ -5,12 +5,16 @@ import java.util.HashMap;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.Vector2;
+import com.mda.bomb.ecs.components.BombAIComponent;
+import com.mda.bomb.ecs.components.PositionComponent;
+import com.mda.bomb.ecs.core.Entity;
 import com.mda.bomb.map.tile.Tile;
 import com.mda.bomb.map.tile.TileFactory;
 import com.mda.bomb.map.tile.TileIDs;
 
 public class Map {
-	// x / y / tile
+	// x,y = tile
 	private HashMap<Integer, HashMap<Integer, Tile>> tiles;
 	private TileFactory tileFactory;
 
@@ -19,8 +23,8 @@ public class Map {
 		tileFactory = new TileFactory();
 	}
 
-	public void initMap() {
-		FileHandle file = Gdx.files.internal("maps/map1.txt");
+	public void initMap(String map) {
+		FileHandle file = Gdx.files.internal(map);
 		String textFile = file.readString();
 		String textFileSplit[] = textFile.split("\n");
 		boolean firstLine = true;
@@ -48,19 +52,39 @@ public class Map {
 	}
 
 	public void render(SpriteBatch batch) {
+		int ts = getTileSize();
 		for (int x = 0; x < getMapWidth(); x++) {
 			for (int y = 0; y < getMapHeight(); y++) {
-				int ts = getTileSize();
 				batch.draw(tileFactory.getTileTexture(getTile(x, y).getTileID()), x * ts, y * ts);
 			}
 		}
 	}
 
-	public boolean canWalk(int x, int y) {
-		if (x >= 0 && x < getMapWidth() && y >= 0 && y < getMapHeight())
-			return !tiles.get(x).get(y).isSolid();
-		else
-			return false;
+	public void explode(Entity e) {
+		BombAIComponent ai = e.getAs(BombAIComponent.class);
+		PositionComponent pc = e.getAs(PositionComponent.class);
+		if(ai == null || pc == null) return;
+		
+		Vector2 tilePos = getTilePositionWithAbsolutePosition(pc.x, pc.y);
+		int tx = (int)tilePos.x, ty = (int)tilePos.y;
+		for(int x = tx - ai.explodeSize; x < tx + ai.explodeSize; x++) {
+			Tile t = getTile(x, ty);
+			if(t != null && t.isExplosable()) {
+				tiles.get(x).put(ty, tileFactory.getTileWithID(TileIDs.TILE_GROUND));
+			}
+		}
+		for(int y = ty - ai.explodeSize; y < ty + ai.explodeSize; y++) {
+			Tile t = getTile(tx, y);
+			if(t != null && t.isExplosable()) {
+				tiles.get(tx).put(y, tileFactory.getTileWithID(TileIDs.TILE_GROUND));
+			}
+		}
+	}
+	
+	public boolean canWalk(float absx, float absy) {
+		Tile t = getTileWithAbsolutePosition(absx, absy);
+		if(t == null) return false;
+		return !t.isSolid();
 	}
 
 	public Tile getTile(int x, int y) {
@@ -68,6 +92,16 @@ public class Map {
 			return tiles.get(x).get(y);
 		else
 			return null;
+	}
+	
+	public Vector2 getTilePositionWithAbsolutePosition(float absx, float absy) {
+		int ts = getTileSize();
+		return new Vector2((int)(absx / ts), (int)(absy / ts));
+	}
+	
+	public Tile getTileWithAbsolutePosition(float absx, float absy) {
+		Vector2 tp = getTilePositionWithAbsolutePosition(absx, absy);
+		return getTile((int)tp.x, (int)tp.y);
 	}
 
 	public int getTileSize() {
@@ -84,6 +118,14 @@ public class Map {
 
 	public int getMapHeight() {
 		return tiles.get(0).size();
+	}
+	
+	public int getAbsoluteWidth() {
+		return getMapWidth() * getTileSize();
+	}
+
+	public int getAbsoluteHeight() {
+		return getMapHeight() * getTileSize();
 	}
 
 	public void dispose() {

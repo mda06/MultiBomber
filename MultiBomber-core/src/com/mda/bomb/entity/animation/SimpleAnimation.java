@@ -21,6 +21,7 @@ public class SimpleAnimation {
 		for(int i = 0; i < nb_sprites; i++) 
 			frames[i] = new TextureRegion(new Texture(Gdx.files.internal(internalPath + i + ".png")));
 		animation = new Animation(animTime, frames);
+		update(0);
 	}
 	
 	public void update(float dt) {

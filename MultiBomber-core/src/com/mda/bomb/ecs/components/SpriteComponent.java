@@ -13,6 +13,10 @@ public class SpriteComponent extends Component {
 		testAnimation = null;
 	}
 	
+	public SpriteComponent(SimpleAnimation anim) {
+		testAnimation = anim;
+	}
+ 	
 	public void initAnimation() {
 		testAnimation = AnimationFactory.getSimpleAnimationOfSpriteNb(ID);
 	}

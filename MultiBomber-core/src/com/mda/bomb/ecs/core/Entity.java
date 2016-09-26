@@ -42,6 +42,10 @@ public class Entity {
 		return (T) components.get(type);
 	}
 	
+	public HashMap<Class<?>, Component> getComponents() {
+		return components;
+	}
+	
 	@Override
 	public boolean equals(Object o) {
 		if(o == null || !(o instanceof Entity)) return false;

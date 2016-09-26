@@ -1,24 +1,32 @@
 package com.mda.bomb.screen;
 
+import java.util.Iterator;
+import java.util.Map.Entry;
+
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.Vector2;
 import com.mda.bomb.MultiBomberMain;
+import com.mda.bomb.ecs.components.BombAIComponent;
 import com.mda.bomb.ecs.components.DirectionComponent;
 import com.mda.bomb.ecs.components.PositionComponent;
 import com.mda.bomb.ecs.components.SpriteComponent;
 import com.mda.bomb.ecs.core.Entity;
 import com.mda.bomb.ecs.core.EntitySystem;
 import com.mda.bomb.ecs.systems.InputSystem;
+import com.mda.bomb.ecs.systems.NameSystem;
 import com.mda.bomb.ecs.systems.SpriteSystem;
+import com.mda.bomb.entity.BombQueue;
+import com.mda.bomb.entity.animation.AnimationFactory;
 import com.mda.bomb.map.Map;
 import com.mda.bomb.network.sync.DirectionSync;
-import com.mda.bomb.screen.event.ChangeDirectionListener;
+import com.mda.bomb.network.sync.DropBombSync;
 import com.mda.bomb.screen.event.GameListener;
 
-public class GameScreen implements Screen, GameListener, ChangeDirectionListener {
+public class GameScreen implements Screen, GameListener {
 
 	private MultiBomberMain main;
 	
@@ -33,14 +41,14 @@ public class GameScreen implements Screen, GameListener, ChangeDirectionListener
 		cam = new OrthographicCamera(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 		cam.update();
 		hasInitGameOnFirstUpdate = false;
-		map = new Map();
-		map.initMap();
+		map = main.getClientSide().getMap();
 	}
 	
 	private void update(float dt) {
 		//Need to do this on this way because in sync we are in another thread and we can't use opengl features...
 		if(!hasInitGameOnFirstUpdate) {
 			main.getClientSide().getEngine().addSystem(new SpriteSystem());
+			main.getClientSide().getEngine().addSystem(new NameSystem());
 			main.getClientSide().getEngine().addSystem(new InputSystem(this));
 			
 			//init sprites 
@@ -48,19 +56,44 @@ public class GameScreen implements Screen, GameListener, ChangeDirectionListener
 				entity.getAs(SpriteComponent.class).initAnimation();
 			}
 			
-			//Need the correct input system for our entity
-			
 			hasInitGameOnFirstUpdate = true;
 		}
 		
 		main.getClientSide().getEngine().update(dt);
 		updateCam();
+		updateBombQueue();
+		updateExplodedBombs();
 	}
 	
-	public void updateCam() {
+	private void updateExplodedBombs() {
+		Iterator<Entry<Integer, Entity>> it = main.getClientSide().getEngine().getSystem(EntitySystem.class).getEntities().entrySet().iterator();
+		while (it.hasNext()) {
+			Entry<Integer, Entity> item = it.next();
+			BombAIComponent ai = item.getValue().getAs(BombAIComponent.class);
+			if (ai != null && ai.isExploded)
+				it.remove();
+		}
+	}
+
+	
+	private void updateBombQueue() {
+		BombQueue.Bomb bomb = BombQueue.poll();
+		if(bomb == null) return;
+		Entity e = new Entity(bomb.ID);
+		e.addComponent(bomb.pc);
+		e.addComponent(new BombAIComponent());
+		e.addComponent(new SpriteComponent(AnimationFactory.getBombAnimation(0.35f)));
+	}
+	
+	private void updateCam() {
 		Entity e = main.getClientSide().getMyEntity();
 		PositionComponent pc = e.getAs(PositionComponent.class);
 		float x = pc.x, y = pc.y;
+		
+		if(x < Gdx.graphics.getWidth()/2) x = Gdx.graphics.getWidth() / 2;
+		else if(x > map.getAbsoluteWidth() - Gdx.graphics.getWidth() / 2) x = map.getAbsoluteWidth() - Gdx.graphics.getWidth() / 2;
+		if(y < Gdx.graphics.getHeight()/2) y = Gdx.graphics.getHeight() / 2;
+		else if(y > map.getAbsoluteHeight() - Gdx.graphics.getHeight() / 2) y = map.getAbsoluteHeight() - Gdx.graphics.getHeight() / 2;
 		cam.position.set(x, y, 0);
 		cam.update();
 	}
@@ -100,5 +133,15 @@ public class GameScreen implements Screen, GameListener, ChangeDirectionListener
 		sync.entityID = e.getID();
 		sync.directionComp = e.getAs(DirectionComponent.class);
 		main.getClientSide().getClient().sendTCP(sync);
+	}
+
+	@Override
+	public void dropBomb(Entity e) {
+		DropBombSync sync = new DropBombSync();
+		sync.entityID = e.getID();
+		PositionComponent pc = e.getAs(PositionComponent.class);
+		//TODO: center the bomb pos
+		sync.bombPos = new Vector2(pc.x, pc.y);
+		main.getClientSide().sendTCP(sync);
 	}
 }

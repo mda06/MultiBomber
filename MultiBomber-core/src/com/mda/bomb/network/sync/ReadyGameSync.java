@@ -1,12 +1,17 @@
 package com.mda.bomb.network.sync;
 
+import com.badlogic.gdx.math.Vector2;
 import com.esotericsoftware.kryonet.Connection;
+import com.mda.bomb.ecs.components.CollisionComponent;
 import com.mda.bomb.ecs.components.DirectionComponent;
+import com.mda.bomb.ecs.components.DropBombComponent;
 import com.mda.bomb.ecs.components.InputComponent;
 import com.mda.bomb.ecs.components.MovementComponent;
 import com.mda.bomb.ecs.components.PositionComponent;
+import com.mda.bomb.ecs.components.SizeComponent;
 import com.mda.bomb.ecs.core.Entity;
 import com.mda.bomb.ecs.core.EntitySystem;
+import com.mda.bomb.ecs.systems.BombAISystem;
 import com.mda.bomb.ecs.systems.MovementSystem;
 import com.mda.bomb.network.MyClient;
 import com.mda.bomb.network.MyServer;
@@ -18,17 +23,23 @@ public class ReadyGameSync extends BaseSync {
 	public void handleServer(MyServer server, Connection connection) {
 		ServerMessages.serverInfo.add("A new Game is starting !");
 		
-		server.getEngine().setGameStarted(true);
-		server.getEngine().addSystem(new MovementSystem());
 		server.getServer().sendToAllTCP(this);
 
 		//Init maps and everything
+		new InitMapSync().handleServer(server, connection);
+		server.getEngine().addSystem(new MovementSystem(server.getMap()));
+		server.getEngine().addSystem(new BombAISystem(server));
 		
+		int i = 1;
 		for (Entity entity : server.getEngine().getSystem(EntitySystem.class).getEntities().values()) {
 			//Calculate the correct position for the entities...
-			entity.addComponent(new PositionComponent((float)Math.random() * 600, (float)Math.random() * 440));
 			entity.addComponent(new DirectionComponent());
 			entity.addComponent(new MovementComponent());
+			entity.addComponent(new CollisionComponent());
+			entity.addComponent(new SizeComponent(new Vector2(50, 50)));
+			entity.addComponent(new PositionComponent(i++ * 64, 64));
+			//TODO: Add a sync for this, because the server and client have the same code for the moment
+			entity.addComponent(new DropBombComponent(5));
 			
 			EntitySync sync = new EntitySync();
 			sync.entityID = entity.getID();
@@ -41,6 +52,8 @@ public class ReadyGameSync extends BaseSync {
 			syncDir.directionComp = entity.getAs(DirectionComponent.class);
 			server.getServer().sendToAllTCP(syncDir);
 		}
+
+		server.getEngine().setGameStarted(true);
 	}
 
 	@Override
@@ -53,8 +66,9 @@ public class ReadyGameSync extends BaseSync {
 			entity.addComponent(new DirectionComponent());
 			entity.addComponent(new MovementComponent());
 		}
-		
+
 		client.getMyEntity().addComponent(new InputComponent());
+		client.getMyEntity().addComponent(new DropBombComponent(5));
 		
 		if(client.getGameListener() != null)
 			client.getGameListener().startGame();

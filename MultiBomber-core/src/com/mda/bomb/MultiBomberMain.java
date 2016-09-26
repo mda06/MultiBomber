@@ -9,18 +9,18 @@ import com.mda.bomb.screen.RoomScreen;
 import com.mda.bomb.screen.ServerScreen;
 import com.mda.bomb.screen.event.OpenServerListener;
 
-public class MultiBomberMain extends Game implements OpenServerListener{
-	
+public class MultiBomberMain extends Game implements OpenServerListener {
+
 	private ConnectScreen connectScreen;
 	private GameScreen gameScreen;
 	private RoomScreen roomScreen;
 	private MyClient clientSide;
-	
+
 	private ServerScreen serverScreen;
 	private boolean needToDisposeClient;
-	
+
 	@Override
-	public void create () {
+	public void create() {
 		needToDisposeClient = true;
 		clientSide = new MyClient();
 		clientSide.setDisconnectedListener(new DisconnectedScreen(this));
@@ -30,29 +30,29 @@ public class MultiBomberMain extends Game implements OpenServerListener{
 		serverScreen = new ServerScreen(this);
 		gameScreen = new GameScreen(this);
 		clientSide.setGameListener(gameScreen);
-		
+
 		setScreen(getConnectScreen());
 	}
-	
+
 	@Override
 	public void dispose() {
-		if(needToDisposeClient && clientSide != null)
+		if (needToDisposeClient && clientSide != null)
 			clientSide.dispose();
-		if(connectScreen != null)
+		if (connectScreen != null)
 			connectScreen.dispose();
-		if(gameScreen != null)
+		if (gameScreen != null)
 			gameScreen.dispose();
-		if(roomScreen != null)
+		if (roomScreen != null)
 			roomScreen.dispose();
-		
-		if(serverScreen != null)
+
+		if (serverScreen != null)
 			serverScreen.dispose();
 	}
 
 	@Override
 	public void openServer() {
 		needToDisposeClient = false;
-		if(clientSide != null)
+		if (clientSide != null)
 			clientSide.dispose();
 		getServerScreen().initEngine();
 		setScreen(getServerScreen());
@@ -61,19 +61,19 @@ public class MultiBomberMain extends Game implements OpenServerListener{
 	public MyClient getClientSide() {
 		return clientSide;
 	}
-	
+
 	public ServerScreen getServerScreen() {
 		return serverScreen;
 	}
-	
+
 	public GameScreen getGameScreen() {
 		return gameScreen;
 	}
-	
+
 	public RoomScreen getRoomScreen() {
 		return roomScreen;
 	}
-	
+
 	public ConnectScreen getConnectScreen() {
 		return connectScreen;
 	}

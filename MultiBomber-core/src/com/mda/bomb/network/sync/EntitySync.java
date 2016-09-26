@@ -20,8 +20,10 @@ public class EntitySync extends BaseSync{
 	@Override
 	public void handleClient(MyClient client, Connection connection) {
 		Entity e = client.getEngine().getSystem(EntitySystem.class).getEntity(entityID);
+		if(e == null) return;
 		PositionComponent pc = e.getAs(PositionComponent.class);
-		pc.x = MathUtils.lerp(pc.x, posX, .5f);
-		pc.y = MathUtils.lerp(pc.y, posY, .5f);
+		if(pc == null) return;
+		pc.x = MathUtils.lerp(pc.x, posX, .9f);
+		pc.y = MathUtils.lerp(pc.y, posY, .9f);
 	}
 }

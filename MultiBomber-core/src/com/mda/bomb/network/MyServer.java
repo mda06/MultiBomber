@@ -1,138 +1,162 @@
 package com.mda.bomb.network;
 
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.NetworkInterface;
-import java.net.SocketException;
-import java.util.Collections;
+import java.util.Iterator;
+import java.util.Map.Entry;
 
+import com.badlogic.gdx.math.Vector2;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
 import com.esotericsoftware.kryonet.Server;
-import com.mda.bomb.ecs.components.DirectionComponent;
+import com.mda.bomb.ecs.components.BombAIComponent;
 import com.mda.bomb.ecs.components.PositionComponent;
 import com.mda.bomb.ecs.core.Engine;
 import com.mda.bomb.ecs.core.Entity;
 import com.mda.bomb.ecs.core.EntitySystem;
+import com.mda.bomb.entity.BombQueue;
+import com.mda.bomb.map.Map;
 import com.mda.bomb.network.sync.BaseSync;
-import com.mda.bomb.network.sync.DirectionSync;
-import com.mda.bomb.network.sync.EnterRoomSync;
+import com.mda.bomb.network.sync.BombExplodeSync;
+import com.mda.bomb.network.sync.DropBombSync;
 import com.mda.bomb.network.sync.EntitySync;
-import com.mda.bomb.network.sync.ReadyGameSync;
 import com.mda.bomb.network.sync.ReadyRoomDisconnectSync;
-import com.mda.bomb.network.sync.ReadyRoomListenerSync;
+import com.mda.bomb.screen.event.BombExplodeListener;
 import com.mda.bomb.util.Constants;
+import com.mda.bomb.util.IPUtils;
 
-public class MyServer extends Listener{
+public class MyServer extends Listener implements BombExplodeListener {
 	public final int MAX_MESSAGES = 100;
-	
+
 	private Kryo kryo;
 	private Server server;
-	
+
 	private Engine engine;
-	
-	public MyServer() {}
-	
+	private Map map;
+
+	public MyServer() {
+	}
+
 	public void initEngine() {
 		engine = new Engine();
 		engine.addSystem(new EntitySystem());
-		
+
+		map = new Map();
+
 		server = new Server();
 		server.addListener(this);
-		
+
 		kryo = server.getKryo();
-		kryo.register(EntitySync.class);
-		kryo.register(EnterRoomSync.class);
-		kryo.register(ReadyRoomListenerSync.class);
-		kryo.register(ReadyRoomDisconnectSync.class);
-		kryo.register(ReadyGameSync.class);
-		kryo.register(DirectionComponent.class);
-		kryo.register(DirectionComponent.Direction.class);
-		kryo.register(DirectionSync.class);
-		
+		KryoRegisters.registerKryo(kryo);
+
 		try {
 			server.bind(Constants.PORT_TCP, Constants.PORT_UDP);
-			server.start();//Reduce size of arrays
-			ServerMessages.serverInfo.add("Server launched on port TCP: " + Constants.PORT_TCP + ", UDP: " + Constants.PORT_UDP + " on IP: " + getIP());
-		} catch(IOException e) {
+			server.start();// Reduce size of arrays
+			ServerMessages.serverInfo.add("Server launched on port TCP: " + Constants.PORT_TCP + ", UDP: "
+					+ Constants.PORT_UDP + " on IP: " + IPUtils.getMyIP());
+		} catch (IOException e) {
 			ServerMessages.serverInfo.add("Exception when start server");
 		}
 	}
-	
+
 	public void updateEngine(float dt) {
 		engine.update(dt);
-		if(engine.isGameStarted())
+		if (engine.isGameStarted()) {
 			updateEntitiesInGame(dt);
+			updateBombQueue();
+			updateExplodedBombs();
+		}
 	}
-	
+
+	private void updateExplodedBombs() {
+		Iterator<Entry<Integer, Entity>> it = engine.getSystem(EntitySystem.class).getEntities().entrySet().iterator();
+		while (it.hasNext()) {
+			Entry<Integer, Entity> item = it.next();
+			BombAIComponent ai = item.getValue().getAs(BombAIComponent.class);
+			if (ai != null && ai.isExploded)
+				it.remove();
+		}
+	}
+
+	private void updateBombQueue() {
+		BombQueue.Bomb bomb = BombQueue.poll();
+		if (bomb == null)
+			return;
+		Entity e = new Entity();
+		e.addComponent(bomb.pc);
+		e.addComponent(new BombAIComponent());
+		DropBombSync sync = new DropBombSync();
+		ServerMessages.serverIncomming.add("New Bomb created with ID: " + e.getID());
+		sync.bombID = e.getID();
+		sync.bombPos = new Vector2(bomb.pc.x, bomb.pc.y);
+		sync.entityID = bomb.ID;
+		server.sendToAllTCP(sync);
+	}
+
 	private void updateEntitiesInGame(float dt) {
 		for (Entity entity : engine.getSystem(EntitySystem.class).getEntities().values()) {
 			EntitySync sync = new EntitySync();
 			sync.entityID = entity.getID();
 			sync.posX = entity.getAs(PositionComponent.class).x;
 			sync.posY = entity.getAs(PositionComponent.class).y;
-			server.sendToAllTCP(sync);
+			server.sendToAllUDP(sync);
 		}
 	}
-	
+
 	@Override
 	public void received(Connection connection, Object o) {
-		if(o instanceof BaseSync) {
-			BaseSync sync = (BaseSync)o;
+		if (o instanceof BaseSync) {
+			BaseSync sync = (BaseSync) o;
 			sync.handleServer(this, connection);
 		}
 	}
-	
+
 	public Entity getEntityWithID(int id) {
-		return ((EntitySystem) engine.getSystem(EntitySystem.class)).getEntity(id);
+		return engine.getSystem(EntitySystem.class).getEntity(id);
 	}
-	
+
 	@Override
 	public void connected(Connection connection) {
-		ServerMessages.serverInfo.add("New client connected, ID: " + connection.getID() + ", Info: " + connection.getRemoteAddressTCP() + 
-				". Total connected : " + server.getConnections().length);
-		if(ServerMessages.serverInfo.size > MAX_MESSAGES) 
+		ServerMessages.serverInfo.add("New client connected, ID: " + connection.getID() + ", Info: "
+				+ connection.getRemoteAddressTCP() + ". Total connected : " + server.getConnections().length);
+		if (ServerMessages.serverInfo.size > MAX_MESSAGES)
 			ServerMessages.serverInfo.removeIndex(0);
 	}
-	
+
 	@Override
 	public void disconnected(Connection connection) {
-		ServerMessages.serverInfo.add("Client disconnected, ID: " + connection.getID() + ", Info: " + connection.getRemoteAddressTCP() + 
-				". Total connected : " + server.getConnections().length);
+		ServerMessages.serverInfo.add("Client disconnected, ID: " + connection.getID() + ", Info: "
+				+ connection.getRemoteAddressTCP() + ". Total connected : " + server.getConnections().length);
 		ReadyRoomDisconnectSync sync = new ReadyRoomDisconnectSync();
 		sync.entityID = connection.getID();
 		sync.handleServer(this, connection);
-		if(ServerMessages.serverInfo.size > MAX_MESSAGES) 
+		if (ServerMessages.serverInfo.size > MAX_MESSAGES)
 			ServerMessages.serverInfo.removeIndex(0);
 	}
-	
-	public String getIP() {
-		try {
-			for (NetworkInterface iface : Collections.list(NetworkInterface.getNetworkInterfaces())) {
-				for (InetAddress address : Collections.list(iface.getInetAddresses())) {
-					if(!address.isLoopbackAddress() && !address.isLinkLocalAddress()) {
-						return address.getHostAddress().trim();
-					}
-				}
-			}
-		} catch (SocketException e) {
-			e.printStackTrace();
-		}
-			
-		return "Unknown";
+
+	public Map getMap() {
+		return map;
 	}
-	
+
 	public Engine getEngine() {
 		return engine;
 	}
-	
+
 	public Server getServer() {
 		return server;
 	}
-	
+
 	public void dispose() {
-		if(server != null)
+		if (server != null)
 			server.stop();
+	}
+
+	@Override
+	public void explode(Entity e) {
+		map.explode(e);
+		ServerMessages.serverIncomming.add("Bomb n°" + e.getID() + " just explosed.");
+		BombExplodeSync sync = new BombExplodeSync();
+		sync.bombID = e.getID();
+		server.sendToAllTCP(sync);
 	}
 }

@@ -23,7 +23,7 @@ public class EntitySync extends BaseSync{
 		if(e == null) return;
 		PositionComponent pc = e.getAs(PositionComponent.class);
 		if(pc == null) return;
-		pc.x = MathUtils.lerp(pc.x, posX, .9f);
-		pc.y = MathUtils.lerp(pc.y, posY, .9f);
+		pc.x = MathUtils.lerp(pc.x, posX, .4f);
+		pc.y = MathUtils.lerp(pc.y, posY, .4f);
 	}
 }

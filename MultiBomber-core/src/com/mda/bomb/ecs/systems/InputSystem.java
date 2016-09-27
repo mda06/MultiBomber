@@ -33,6 +33,8 @@ public class InputSystem extends BaseSystem {
 		else if(Gdx.input.isKeyPressed(Keys.UP)) newDirection = Direction.UP;
 		else newDirection = Direction.STOP;
 		
+		//Gdx.input.i
+		
 		if(newDirection != dc.direction) {
 			dc.direction = newDirection;
 			if(listener != null)

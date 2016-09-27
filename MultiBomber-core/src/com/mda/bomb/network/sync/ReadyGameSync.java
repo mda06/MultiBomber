@@ -60,6 +60,8 @@ public class ReadyGameSync extends BaseSync {
 	public void handleClient(MyClient client, Connection connection) {
 		client.getEngine().setGameStarted(true);
 		
+		//Test for less latency, if we handle also collision add size and collision comp
+		//client.getEngine().addSystem(new MovementSystem(null));
 
 		for (Entity entity : client.getEngine().getSystem(EntitySystem.class).getEntities().values()) {
 			entity.addComponent(new PositionComponent(0, 0));

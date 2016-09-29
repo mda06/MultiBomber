@@ -16,6 +16,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.mda.bomb.MultiBomberMain;
 import com.mda.bomb.network.MyClient;
+import com.mda.bomb.screen.actor.BackgroundActor;
 import com.mda.bomb.screen.event.EnterRoomListener;
 import com.mda.bomb.screen.event.OpenServerListener;
 import com.mda.bomb.screen.filter.DigitFilter;
@@ -52,6 +53,8 @@ public class ConnectScreen implements Screen, EnterRoomListener {
 	private void initStage() {
 		Skin skin = new Skin(Gdx.files.internal("ui/defaultskin.json"));
 		stage = new Stage();
+		
+		stage.addActor(new BackgroundActor());
 
 		lblName = new Label(Constants.GAME_NAME, skin);
 		lblName.setCenterPosition(Gdx.graphics.getWidth() / 2, Gdx.graphics.getHeight() / 1.5f);

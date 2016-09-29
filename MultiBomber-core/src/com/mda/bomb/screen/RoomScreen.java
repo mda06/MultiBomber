@@ -24,6 +24,7 @@ import com.mda.bomb.entity.animation.AnimationFactory;
 import com.mda.bomb.entity.animation.SimpleAnimation;
 import com.mda.bomb.network.MyClient;
 import com.mda.bomb.network.sync.ReadyRoomListenerSync;
+import com.mda.bomb.screen.actor.BackgroundActor;
 import com.mda.bomb.screen.event.RoomListener;
 
 public class RoomScreen implements Screen, RoomListener {
@@ -64,6 +65,8 @@ public class RoomScreen implements Screen, RoomListener {
 		Skin skin = new Skin(Gdx.files.internal("ui/defaultskin.json"));
 		stage = new Stage();
 
+		stage.addActor(new BackgroundActor());
+		
 		lblName = new Label("Name: ", skin);
 		lblName.setCenterPosition(Gdx.graphics.getWidth() / 2 - 150, Gdx.graphics.getHeight() / 1.1f);
 		stage.addActor(lblName);

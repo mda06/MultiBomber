@@ -55,9 +55,9 @@ public class RoomScreen implements Screen, RoomListener {
 	}
 	
 	private void initAnims() {
-		anim1 = AnimationFactory.getSimpleAnimationOfSpriteNb(1);
+		anim1 = AnimationFactory.getBombermanFrontAnimation();
 		anim1.getAnimation().setPlayMode(PlayMode.LOOP);
-		anim2 = AnimationFactory.getSimpleAnimationOfSpriteNb(2);
+		anim2 = AnimationFactory.getCreepFrontAnimation();
 		anim2.getAnimation().setPlayMode(PlayMode.LOOP);
 	}
 

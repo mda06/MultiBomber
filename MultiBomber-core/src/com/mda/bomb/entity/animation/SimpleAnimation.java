@@ -37,6 +37,11 @@ public class SimpleAnimation {
 		return animation;
 	}
 	
+	public void resetAnim() {
+		stateTime = 0;
+		currentFrame = animation.getKeyFrame(stateTime);
+	}
+	
 	public void dispose() {
 		for(TextureRegion tr : frames)
 			tr.getTexture().dispose();

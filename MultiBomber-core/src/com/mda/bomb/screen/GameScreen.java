@@ -118,7 +118,7 @@ public class GameScreen implements Screen, GameListener {
 		Entity e = new Entity(bomb.ID);
 		e.addComponent(bomb.pc);
 		e.addComponent(new BombAIComponent());
-		e.addComponent(new SpriteComponent(AnimationFactory.getBombAnimation(0.35f)));
+		e.addComponent(new SpriteComponent(AnimationFactory.getBombAnimation()));
 	}
 	
 	private void updateCam() {

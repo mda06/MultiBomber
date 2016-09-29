@@ -1,23 +1,44 @@
 package com.mda.bomb.ecs.components;
 
+import java.util.HashMap;
+
 import com.mda.bomb.ecs.core.Component;
 import com.mda.bomb.entity.animation.AnimationFactory;
 import com.mda.bomb.entity.animation.SimpleAnimation;
 
 public class SpriteComponent extends Component {
 	public int ID;
-	public SimpleAnimation testAnimation;
+	public enum AnimationHash {
+		ANIM_SIMPLE, ANIM_FRONT, ANIM_BACK, ANIM_LEFT, ANIM_RIGHT;
+	}
+	public HashMap<AnimationHash, SimpleAnimation> animations;
+	public AnimationHash oldAnim = null;
 	
 	public SpriteComponent(int id) {
 		ID = id;
-		testAnimation = null;
+		animations = new HashMap<AnimationHash, SimpleAnimation>();
 	}
 	
 	public SpriteComponent(SimpleAnimation anim) {
-		testAnimation = anim;
+		animations = new HashMap<AnimationHash, SimpleAnimation>();
+		animations.put(AnimationHash.ANIM_SIMPLE, anim);
 	}
  	
 	public void initAnimation() {
-		testAnimation = AnimationFactory.getSimpleAnimationOfSpriteNb(ID);
+		if(ID == 1) {
+			animations.put(AnimationHash.ANIM_FRONT, AnimationFactory.getBombermanFrontAnimation());
+			animations.put(AnimationHash.ANIM_BACK, AnimationFactory.getBombermanBackAnimation());
+			animations.put(AnimationHash.ANIM_LEFT, AnimationFactory.getBombermanSideAnimation());
+			animations.put(AnimationHash.ANIM_RIGHT, AnimationFactory.getBombermanSideAnimation());
+		} else {
+			animations.put(AnimationHash.ANIM_FRONT, AnimationFactory.getCreepFrontAnimation());
+			animations.put(AnimationHash.ANIM_BACK, AnimationFactory.getCreepBackAnimation());
+			animations.put(AnimationHash.ANIM_LEFT, AnimationFactory.getCreepSideAnimation());
+			animations.put(AnimationHash.ANIM_RIGHT, AnimationFactory.getCreepSideAnimation());
+		}
+	}
+	
+	public SimpleAnimation getAnimation(AnimationHash anim) {
+		return animations.get(anim);
 	}
 }

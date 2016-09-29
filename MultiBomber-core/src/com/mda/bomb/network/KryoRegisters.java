@@ -4,6 +4,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.esotericsoftware.kryo.Kryo;
 import com.mda.bomb.ecs.components.DirectionComponent;
 import com.mda.bomb.network.sync.BombExplodeSync;
+import com.mda.bomb.network.sync.CollisionCompSync;
 import com.mda.bomb.network.sync.DeadSync;
 import com.mda.bomb.network.sync.DirectionSync;
 import com.mda.bomb.network.sync.DropBombSync;
@@ -31,6 +32,7 @@ public class KryoRegisters {
 		kryo.register(Vector2.class);
 		kryo.register(BombExplodeSync.class);
 		kryo.register(HealthSync.class);
+		kryo.register(CollisionCompSync.class);
 		kryo.register(DeadSync.class);
 	}
 }

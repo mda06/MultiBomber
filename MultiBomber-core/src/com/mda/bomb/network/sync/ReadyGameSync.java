@@ -9,10 +9,10 @@ import com.mda.bomb.ecs.components.HealthComponent;
 import com.mda.bomb.ecs.components.InputComponent;
 import com.mda.bomb.ecs.components.MovementComponent;
 import com.mda.bomb.ecs.components.PositionComponent;
+import com.mda.bomb.ecs.components.SpriteComponent;
 import com.mda.bomb.ecs.core.Entity;
 import com.mda.bomb.ecs.core.EntitySystem;
 import com.mda.bomb.ecs.systems.BombAISystem;
-import com.mda.bomb.ecs.systems.FlameSystem;
 import com.mda.bomb.ecs.systems.MovementSystem;
 import com.mda.bomb.network.MyClient;
 import com.mda.bomb.network.MyServer;
@@ -38,9 +38,19 @@ public class ReadyGameSync extends BaseSync {
 			entity.addComponent(new MovementComponent());
 			entity.addComponent(new CollisionComponent(new Vector2(50, 50)));
 			entity.addComponent(new PositionComponent(i++ * 96, 96));
+			if(entity.getAs(SpriteComponent.class).ID == 1) {
+				entity.getAs(CollisionComponent.class).offset = new Vector2(0, -33);
+				entity.getAs(PositionComponent.class).y += 33;
+			}
 			//TODO: Add a sync for this, because the server and client have the same code for the moment
 			entity.addComponent(new DropBombComponent(5));
 			entity.addComponent(new HealthComponent(3));
+			
+			CollisionCompSync ccSync = new CollisionCompSync();
+			ccSync.entityID = entity.getID();
+			ccSync.size = entity.getAs(CollisionComponent.class).size;
+			ccSync.offset = entity.getAs(CollisionComponent.class).offset;
+			server.getServer().sendToAllTCP(ccSync);
 			
 			HealthSync syncHealth = new HealthSync();
 			syncHealth.entityID = entity.getID();
@@ -65,17 +75,11 @@ public class ReadyGameSync extends BaseSync {
 	@Override
 	public void handleClient(MyClient client, Connection connection) {
 		client.getEngine().setGameStarted(true);
-		
-		//Test for less latency, if we handle also collision add size and collision comp
-		//client.getEngine().addSystem(new MovementSystem(null));
-		client.getEngine().addSystem(new FlameSystem());
 
 		for (Entity entity : client.getEngine().getSystem(EntitySystem.class).getEntities().values()) {
 			entity.addComponent(new PositionComponent(0, 0));
 			entity.addComponent(new DirectionComponent());
 			entity.addComponent(new MovementComponent());
-			//Need this for the spritesystem
-			entity.addComponent(new CollisionComponent(new Vector2(50, 50)));
 		}
 
 		client.getMyEntity().addComponent(new InputComponent());

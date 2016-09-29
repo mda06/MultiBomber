@@ -18,7 +18,7 @@ public class SpriteSystem extends RenderSystem {
 	
 	public SpriteSystem() {
 		Pixmap pix = new Pixmap(64, 64, Format.RGBA8888);
-		pix.setColor(1, .2f, .2f, .7f);
+		pix.setColor(1, .2f, .2f, .4f);
 		pix.fill();
 		collisionViewer = new Texture(pix);
 	}
@@ -36,14 +36,15 @@ public class SpriteSystem extends RenderSystem {
 		sc = e.getAs(SpriteComponent.class);
 		pc = e.getAs(PositionComponent.class);
 		if(sc == null || pc == null) return;
+
+		CollisionComponent cc = e.getAs(CollisionComponent.class);
+		if(cc != null) {
+			batch.draw(collisionViewer, pc.x - cc.size.x / 2 + cc.offset.x, pc.y - cc.size.y / 2 + cc.offset.y, cc.size.x, cc.size.y);
+		}
 		
 		TextureRegion tr = sc.testAnimation.getCurrentFrame();
 		int w = tr.getRegionWidth(), h = tr.getRegionHeight();
 		batch.draw(sc.testAnimation.getCurrentFrame(), pc.x - w / 2, pc.y - h / 2);
 		
-		CollisionComponent cc = e.getAs(CollisionComponent.class);
-		if(cc != null) {
-			batch.draw(collisionViewer, pc.x - cc.size.x / 2, pc.y - cc.size.y / 2, cc.size.x, cc.size.y);
-		}
 	}
 }

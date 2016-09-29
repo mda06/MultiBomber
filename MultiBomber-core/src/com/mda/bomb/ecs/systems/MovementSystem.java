@@ -33,7 +33,7 @@ public class MovementSystem extends BaseSystem {
 		updateVelY(dt);
 
 		Vector2 movement = new Vector2();
-		if(cc != null) {
+		if(cc != null && map != null) {
 			movement.x = checkColX(dt);
 			movement.y = checkColY(dt);
 		} else {
@@ -108,7 +108,7 @@ public class MovementSystem extends BaseSystem {
 		else return 0;
 		
 		
-		if(map.canWalk(testX, pc.y - halfH) && map.canWalk(testX, pc.y + halfH)) 
+		if(map.canWalk(testX + cc.offset.x, pc.y - halfH + cc.offset.y) && map.canWalk(testX + cc.offset.x, pc.y + halfH + cc.offset.y)) 
 			x = mc.vel.x * dt;
 		else {
 			x = 0;
@@ -129,7 +129,7 @@ public class MovementSystem extends BaseSystem {
 		else return 0;
 		
 		
-		if(map.canWalk(pc.x - halfW, testY) && map.canWalk(pc.x + halfW, testY)) 
+		if(map.canWalk(pc.x - halfW + cc.offset.x, testY + cc.offset.y) && map.canWalk(pc.x + halfW + cc.offset.x, testY + cc.offset.y)) 
 			y = mc.vel.y * dt;
 		else {
 			y = 0;

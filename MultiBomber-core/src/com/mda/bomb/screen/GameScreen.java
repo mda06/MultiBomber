@@ -19,7 +19,9 @@ import com.mda.bomb.ecs.components.PositionComponent;
 import com.mda.bomb.ecs.components.SpriteComponent;
 import com.mda.bomb.ecs.core.Entity;
 import com.mda.bomb.ecs.core.EntitySystem;
+import com.mda.bomb.ecs.systems.FlameSystem;
 import com.mda.bomb.ecs.systems.InputSystem;
+import com.mda.bomb.ecs.systems.MovementSystem;
 import com.mda.bomb.ecs.systems.NameSystem;
 import com.mda.bomb.ecs.systems.SpriteSystem;
 import com.mda.bomb.entity.BombQueue;
@@ -51,9 +53,12 @@ public class GameScreen implements Screen, GameListener {
 	private void update(float dt) {
 		//Need to do this on this way because in sync we are in another thread and we can't use opengl features...
 		if(!hasInitGameOnFirstUpdate) {
+			main.getClientSide().getEngine().addSystem(new FlameSystem());
 			main.getClientSide().getEngine().addSystem(new SpriteSystem());
 			main.getClientSide().getEngine().addSystem(new NameSystem());
 			main.getClientSide().getEngine().addSystem(new InputSystem(this));
+			//Test for less latency
+			main.getClientSide().getEngine().addSystem(new MovementSystem(map));
 			
 			//init sprites 
 			for (Entity entity : main.getClientSide().getEngine().getSystem(EntitySystem.class).getEntities().values()) {

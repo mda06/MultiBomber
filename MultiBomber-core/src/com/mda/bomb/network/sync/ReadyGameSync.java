@@ -9,7 +9,6 @@ import com.mda.bomb.ecs.components.HealthComponent;
 import com.mda.bomb.ecs.components.InputComponent;
 import com.mda.bomb.ecs.components.MovementComponent;
 import com.mda.bomb.ecs.components.PositionComponent;
-import com.mda.bomb.ecs.components.SizeComponent;
 import com.mda.bomb.ecs.core.Entity;
 import com.mda.bomb.ecs.core.EntitySystem;
 import com.mda.bomb.ecs.systems.BombAISystem;
@@ -37,9 +36,8 @@ public class ReadyGameSync extends BaseSync {
 			//Calculate the correct position for the entities...
 			entity.addComponent(new DirectionComponent());
 			entity.addComponent(new MovementComponent());
-			entity.addComponent(new CollisionComponent());
-			entity.addComponent(new SizeComponent(new Vector2(50, 50)));
-			entity.addComponent(new PositionComponent(i++ * 64, 64));
+			entity.addComponent(new CollisionComponent(new Vector2(50, 50)));
+			entity.addComponent(new PositionComponent(i++ * 96, 96));
 			//TODO: Add a sync for this, because the server and client have the same code for the moment
 			entity.addComponent(new DropBombComponent(5));
 			entity.addComponent(new HealthComponent(3));
@@ -76,6 +74,8 @@ public class ReadyGameSync extends BaseSync {
 			entity.addComponent(new PositionComponent(0, 0));
 			entity.addComponent(new DirectionComponent());
 			entity.addComponent(new MovementComponent());
+			//Need this for the spritesystem
+			entity.addComponent(new CollisionComponent(new Vector2(50, 50)));
 		}
 
 		client.getMyEntity().addComponent(new InputComponent());

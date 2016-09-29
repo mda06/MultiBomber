@@ -168,6 +168,8 @@ public class RoomScreen implements Screen, RoomListener {
 			
 		} catch(Exception ex) {
 			ex.printStackTrace();
+			if(batch.isDrawing())
+				batch.end();
 		}
 	}
 

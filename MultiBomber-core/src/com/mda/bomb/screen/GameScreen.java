@@ -93,10 +93,10 @@ public class GameScreen implements Screen, GameListener {
 				int tx = (int)tilePos.x, ty = (int)tilePos.y;
 				int ts = map.getTileSize();
 				for(int x = tx - ai.explodeSize +1; x < tx + ai.explodeSize; x++) {
-					lstPos.add(new Vector2(x * ts, ty * ts));
+					lstPos.add(new Vector2(x * ts + (pc.x % ts), pc.y));
 				}
 				for(int y = ty - ai.explodeSize +1; y < ty + ai.explodeSize; y++) {
-					lstPos.add(new Vector2(tx * ts, y * ts));
+					lstPos.add(new Vector2(pc.x, y * ts + (pc.y % ts)));
 				}
 				it.remove();
 			}

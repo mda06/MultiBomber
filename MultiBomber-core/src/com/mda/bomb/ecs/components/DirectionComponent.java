@@ -3,9 +3,15 @@ package com.mda.bomb.ecs.components;
 import com.mda.bomb.ecs.core.Component;
 
 public class DirectionComponent extends Component {
-	public enum Direction {
-		LEFT, RIGHT, DOWN, UP, STOP
+	
+	public enum HorizontalDirection {
+		LEFT, RIGHT, STOP
 	}
 	
-	public Direction direction = Direction.STOP;
+	public enum VerticalDirection {
+		UP, DOWN, STOP
+	}
+
+	public HorizontalDirection horizontalDirection = HorizontalDirection.STOP;
+	public VerticalDirection verticalDirection = VerticalDirection.STOP;
 }

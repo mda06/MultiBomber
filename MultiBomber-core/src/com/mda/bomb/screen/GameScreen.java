@@ -176,7 +176,6 @@ public class GameScreen implements Screen, GameListener {
 		DropBombSync sync = new DropBombSync();
 		sync.entityID = e.getID();
 		PositionComponent pc = e.getAs(PositionComponent.class);
-		//TODO: center the bomb pos
 		sync.bombPos = new Vector2(pc.x, pc.y);
 		main.getClientSide().sendTCP(sync);
 	}

@@ -24,7 +24,8 @@ public class KryoRegisters {
 		kryo.register(ReadyRoomDisconnectSync.class);
 		kryo.register(ReadyGameSync.class);
 		kryo.register(DirectionComponent.class);
-		kryo.register(DirectionComponent.Direction.class);
+		kryo.register(DirectionComponent.VerticalDirection.class);
+		kryo.register(DirectionComponent.HorizontalDirection.class);
 		kryo.register(DirectionSync.class);
 		kryo.register(InitMapSync.class);
 		kryo.register(BombExplodeSync.class);

@@ -15,14 +15,16 @@ public class DirectionSync extends BaseSync {
 	@Override
 	public void handleServer(MyServer server, Connection connection) {
 		Entity e = server.getEntityWithID(entityID);
-		e.getAs(DirectionComponent.class).direction = directionComp.direction;
+		e.getAs(DirectionComponent.class).horizontalDirection = directionComp.horizontalDirection;
+		e.getAs(DirectionComponent.class).verticalDirection = directionComp.verticalDirection;
 		server.getServer().sendToAllTCP(this);
 	}
 
 	@Override
 	public void handleClient(MyClient client, Connection connection) {
 		Entity e = client.getEngine().getSystem(EntitySystem.class).getEntity(entityID);
-		e.getAs(DirectionComponent.class).direction = directionComp.direction;
+		e.getAs(DirectionComponent.class).horizontalDirection = directionComp.horizontalDirection;
+		e.getAs(DirectionComponent.class).verticalDirection = directionComp.verticalDirection;
 	}
 
 }

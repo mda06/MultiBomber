@@ -3,7 +3,8 @@ package com.mda.bomb.ecs.systems;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
 import com.mda.bomb.ecs.components.DirectionComponent;
-import com.mda.bomb.ecs.components.DirectionComponent.Direction;
+import com.mda.bomb.ecs.components.DirectionComponent.HorizontalDirection;
+import com.mda.bomb.ecs.components.DirectionComponent.VerticalDirection;
 import com.mda.bomb.ecs.components.DropBombComponent;
 import com.mda.bomb.ecs.components.InputComponent;
 import com.mda.bomb.ecs.core.BaseSystem;
@@ -26,17 +27,20 @@ public class InputSystem extends BaseSystem {
 		dc = e.getAs(DirectionComponent.class);
 		if(dc == null) return;
 		
-		Direction newDirection = Direction.STOP;
-		if(Gdx.input.isKeyPressed(Keys.LEFT)) newDirection = Direction.LEFT;
-		else if(Gdx.input.isKeyPressed(Keys.RIGHT)) newDirection = Direction.RIGHT;
-		else if(Gdx.input.isKeyPressed(Keys.DOWN)) newDirection = Direction.DOWN;
-		else if(Gdx.input.isKeyPressed(Keys.UP)) newDirection = Direction.UP;
-		else newDirection = Direction.STOP;
+		HorizontalDirection newHD = HorizontalDirection.STOP;
+		if(Gdx.input.isKeyPressed(Keys.LEFT)) newHD = HorizontalDirection.LEFT;
+		else if(Gdx.input.isKeyPressed(Keys.RIGHT)) newHD = HorizontalDirection.RIGHT;
+		else newHD = HorizontalDirection.STOP;
 		
-		//Gdx.input.i
+		VerticalDirection newVD = VerticalDirection.STOP;
+		if(Gdx.input.isKeyPressed(Keys.DOWN)) newVD = VerticalDirection.DOWN;
+		else if(Gdx.input.isKeyPressed(Keys.UP)) newVD = VerticalDirection.UP;
+		else newVD = VerticalDirection.STOP;
 		
-		if(newDirection != dc.direction) {
-			dc.direction = newDirection;
+		
+		if(newHD != dc.horizontalDirection || newVD != dc.verticalDirection) {
+			dc.horizontalDirection = newHD;
+			dc.verticalDirection = newVD;
 			if(listener != null)
 				listener.directionChanged(e);
 		}

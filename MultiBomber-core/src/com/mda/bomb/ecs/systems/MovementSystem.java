@@ -3,7 +3,8 @@ package com.mda.bomb.ecs.systems;
 import com.badlogic.gdx.math.Vector2;
 import com.mda.bomb.ecs.components.CollisionComponent;
 import com.mda.bomb.ecs.components.DirectionComponent;
-import com.mda.bomb.ecs.components.DirectionComponent.Direction;
+import com.mda.bomb.ecs.components.DirectionComponent.HorizontalDirection;
+import com.mda.bomb.ecs.components.DirectionComponent.VerticalDirection;
 import com.mda.bomb.ecs.components.MovementComponent;
 import com.mda.bomb.ecs.components.PositionComponent;
 import com.mda.bomb.ecs.core.BaseSystem;
@@ -46,9 +47,9 @@ public class MovementSystem extends BaseSystem {
 	}
 
 	private void updateVelX(float dt) {
-		if (dc.direction == Direction.LEFT)
+		if (dc.horizontalDirection == HorizontalDirection.LEFT)
 			mc.vel.x -= mc.accel.x * dt;
-		else if (dc.direction == Direction.RIGHT)
+		else if (dc.horizontalDirection == HorizontalDirection.RIGHT)
 			mc.vel.x += mc.accel.x * dt;
 		else 
 			deccelX(dt);
@@ -72,9 +73,9 @@ public class MovementSystem extends BaseSystem {
 	}
 
 	private void updateVelY(float dt) {
-		if (dc.direction == Direction.DOWN)
+		if (dc.verticalDirection == VerticalDirection.DOWN)
 			mc.vel.y -= mc.accel.y * dt;
-		else if (dc.direction == Direction.UP)
+		else if (dc.verticalDirection == VerticalDirection.UP)
 			mc.vel.y += mc.accel.y * dt;
 		else
 			deccelY(dt);

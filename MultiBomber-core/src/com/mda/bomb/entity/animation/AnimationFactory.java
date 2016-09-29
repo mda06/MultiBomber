@@ -53,4 +53,9 @@ public class AnimationFactory {
 		anim.getAnimation().setPlayMode(PlayMode.LOOP);
 		return anim;
 	}
+	
+	public static SimpleAnimation getPowerupBomb() {
+		SimpleAnimation anim = new SimpleAnimation("Sprites/Powerups/BombPowerup.png");
+		return anim;
+	}
 }

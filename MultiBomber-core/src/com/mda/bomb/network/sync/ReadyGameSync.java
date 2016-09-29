@@ -14,6 +14,7 @@ import com.mda.bomb.ecs.core.Entity;
 import com.mda.bomb.ecs.core.EntitySystem;
 import com.mda.bomb.ecs.systems.BombAISystem;
 import com.mda.bomb.ecs.systems.MovementSystem;
+import com.mda.bomb.ecs.systems.PowerupSystem;
 import com.mda.bomb.network.MyClient;
 import com.mda.bomb.network.MyServer;
 import com.mda.bomb.network.ServerMessages;
@@ -30,6 +31,7 @@ public class ReadyGameSync extends BaseSync {
 		new InitMapSync().handleServer(server, connection);
 		server.getEngine().addSystem(new MovementSystem(server.getMap()));
 		server.getEngine().addSystem(new BombAISystem(server));
+		server.getEngine().addExternSystem(new PowerupSystem(server.getMap(), server));
 		
 		int i = 1;
 		for (Entity entity : server.getEngine().getSystem(EntitySystem.class).getEntities().values()) {

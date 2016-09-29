@@ -15,6 +15,7 @@ import com.mda.bomb.ecs.components.BombAIComponent;
 import com.mda.bomb.ecs.components.HealthComponent;
 import com.mda.bomb.ecs.components.NameComponent;
 import com.mda.bomb.ecs.components.PositionComponent;
+import com.mda.bomb.ecs.components.PowerupComponent;
 import com.mda.bomb.ecs.core.Engine;
 import com.mda.bomb.ecs.core.Entity;
 import com.mda.bomb.ecs.core.EntitySystem;
@@ -26,12 +27,14 @@ import com.mda.bomb.network.sync.DeadSync;
 import com.mda.bomb.network.sync.DropBombSync;
 import com.mda.bomb.network.sync.EntitySync;
 import com.mda.bomb.network.sync.HealthSync;
+import com.mda.bomb.network.sync.PowerupSpawnSync;
 import com.mda.bomb.network.sync.ReadyRoomDisconnectSync;
 import com.mda.bomb.screen.event.BombExplodeListener;
+import com.mda.bomb.screen.event.PowerupListener;
 import com.mda.bomb.util.Constants;
 import com.mda.bomb.util.IPUtils;
 
-public class MyServer extends Listener implements BombExplodeListener {
+public class MyServer extends Listener implements BombExplodeListener, PowerupListener {
 	public final int MAX_MESSAGES = 100;
 
 	private Kryo kryo;
@@ -224,6 +227,18 @@ public class MyServer extends Listener implements BombExplodeListener {
 		ServerMessages.serverIncomming.add("Bomb n°" + e.getID() + " just explosed.");
 		BombExplodeSync sync = new BombExplodeSync();
 		sync.bombID = e.getID();
+		server.sendToAllTCP(sync);
+	}
+
+	@Override
+	public void PowerupGenerated(Entity e) {
+		PositionComponent pc = e.getAs(PositionComponent.class);
+		ServerMessages.serverIncomming.add("Powerup generated at " + pc.x + "/" + pc.y);
+		PowerupSpawnSync sync = new PowerupSpawnSync();
+		sync.entityID = e.getID();
+		sync.x = pc.x;
+		sync.y = pc.y;
+		sync.powComp = e.getAs(PowerupComponent.class);
 		server.sendToAllTCP(sync);
 	}
 }

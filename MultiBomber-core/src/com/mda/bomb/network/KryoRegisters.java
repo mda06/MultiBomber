@@ -3,6 +3,7 @@ package com.mda.bomb.network;
 import com.badlogic.gdx.math.Vector2;
 import com.esotericsoftware.kryo.Kryo;
 import com.mda.bomb.ecs.components.DirectionComponent;
+import com.mda.bomb.ecs.components.PowerupComponent;
 import com.mda.bomb.network.sync.BombExplodeSync;
 import com.mda.bomb.network.sync.CollisionCompSync;
 import com.mda.bomb.network.sync.DeadSync;
@@ -12,6 +13,7 @@ import com.mda.bomb.network.sync.EnterRoomSync;
 import com.mda.bomb.network.sync.EntitySync;
 import com.mda.bomb.network.sync.HealthSync;
 import com.mda.bomb.network.sync.InitMapSync;
+import com.mda.bomb.network.sync.PowerupSpawnSync;
 import com.mda.bomb.network.sync.ReadyGameSync;
 import com.mda.bomb.network.sync.ReadyRoomDisconnectSync;
 import com.mda.bomb.network.sync.ReadyRoomListenerSync;
@@ -35,5 +37,7 @@ public class KryoRegisters {
 		kryo.register(HealthSync.class);
 		kryo.register(CollisionCompSync.class);
 		kryo.register(DeadSync.class);
+		kryo.register(PowerupComponent.class);
+		kryo.register(PowerupSpawnSync.class);
 	}
 }

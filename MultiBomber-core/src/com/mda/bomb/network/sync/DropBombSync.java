@@ -2,6 +2,7 @@ package com.mda.bomb.network.sync;
 
 import com.badlogic.gdx.math.Vector2;
 import com.esotericsoftware.kryonet.Connection;
+import com.mda.bomb.ecs.components.CollisionComponent;
 import com.mda.bomb.ecs.components.DropBombComponent;
 import com.mda.bomb.ecs.components.PositionComponent;
 import com.mda.bomb.ecs.core.Entity;
@@ -20,7 +21,11 @@ public class DropBombSync extends BaseSync {
 		DropBombComponent dropBombComp = e.getAs(DropBombComponent.class);
 		if(dropBombComp != null && dropBombComp.nbOfBombs > 0) {
 			dropBombComp.nbOfBombs--;
-			BombQueue.Bomb b = new BombQueue.Bomb(new PositionComponent(bombPos.x, bombPos.y), entityID);
+			CollisionComponent cc = e.getAs(CollisionComponent.class);
+			Vector2 off = new Vector2();
+			if(cc != null)
+				off = cc.offset;
+			BombQueue.Bomb b = new BombQueue.Bomb(new PositionComponent(bombPos.x + off.x, bombPos.y + off.y), entityID);
 			BombQueue.addToQueue(b);
 		}
 	}

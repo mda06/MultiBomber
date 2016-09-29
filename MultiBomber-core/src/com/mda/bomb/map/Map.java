@@ -1,6 +1,8 @@
 package com.mda.bomb.map;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
@@ -58,6 +60,17 @@ public class Map {
 				batch.draw(tileFactory.getTileTexture(getTile(x, y).getTileID()), x * ts, y * ts);
 			}
 		}
+	}
+	
+	public List<Vector2> getBackgroundTiles() {
+		List<Vector2> lst = new ArrayList<Vector2>();
+		for (int x = 0; x < getMapWidth(); x++) {
+			for (int y = 0; y < getMapHeight(); y++) {
+				if(!getTile(x, y).isSolid())
+					lst.add(new Vector2(x, y));
+			}
+		}
+		return lst;
 	}
 
 	public void explode(Entity e) {

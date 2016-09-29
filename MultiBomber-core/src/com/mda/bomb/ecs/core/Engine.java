@@ -8,10 +8,12 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 public class Engine {
 	private HashMap<Class<?>, BaseSystem> systems;
+	private HashMap<Class<?>, ExternSystem> externSystems;
 	private boolean isGameStarted;
 
 	public Engine() {
 		systems = new HashMap<Class<?>, BaseSystem>();
+		externSystems = new HashMap<Class<?>, ExternSystem>();
 		isGameStarted = false;
 	}
 	
@@ -19,6 +21,10 @@ public class Engine {
 		systems.put(bs.getClass(), bs);
 	}
 
+	public void addExternSystem(ExternSystem es) {
+		externSystems.put(es.getClass(), es);
+	}
+	
 	public void removeSystem(Class<?> type) {
 		systems.remove(type);
 	}
@@ -26,6 +32,11 @@ public class Engine {
 	@SuppressWarnings("unchecked")
 	public <T extends BaseSystem> T getSystem(Class<T> classType) {
 		return (T) systems.get(classType);
+	}
+	
+	@SuppressWarnings("unchecked")
+	public <T extends ExternSystem> T getExternSystem(Class<T> classType) {
+		return (T) externSystems.get(classType);
 	}
 
 	public void update(float dt) {
@@ -36,6 +47,10 @@ public class Engine {
 		if (es == null)
 			throw new Error("No EntitySystem was found in the Engine. Add a EntitySystem to the Engine.");
 
+		for(ExternSystem ext : externSystems.values()) {
+			ext.update(dt);
+		}
+		
 		for (Entity entity : es.getEntities().values()) {
 			Iterator<Entry<Class<?>, BaseSystem>> it = systems.entrySet().iterator();
 			while (it.hasNext()) {

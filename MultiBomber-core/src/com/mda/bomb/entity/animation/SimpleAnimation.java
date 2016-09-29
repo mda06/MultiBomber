@@ -11,6 +11,14 @@ public class SimpleAnimation {
 	private float stateTime;
 	private Animation animation;
 	
+	public SimpleAnimation(String internalPath) {
+		stateTime = 0;
+		frames = new TextureRegion[1];
+		frames[0] = new TextureRegion(new Texture(Gdx.files.internal(internalPath)));
+		animation = new Animation(0, frames);
+		update(0);
+	}
+	
 	public SimpleAnimation(int nb_sprites, String internalPath) {
 		this(nb_sprites, internalPath, 0.05f);
 	}

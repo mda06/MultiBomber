@@ -26,6 +26,8 @@ import com.mda.bomb.ecs.systems.NameSystem;
 import com.mda.bomb.ecs.systems.SpriteSystem;
 import com.mda.bomb.entity.BombQueue;
 import com.mda.bomb.entity.FlameFactory;
+import com.mda.bomb.entity.PowerupQueue;
+import com.mda.bomb.entity.PowerupQueue.Powerup;
 import com.mda.bomb.entity.animation.AnimationFactory;
 import com.mda.bomb.map.Map;
 import com.mda.bomb.network.sync.DirectionSync;
@@ -73,6 +75,16 @@ public class GameScreen implements Screen, GameListener {
 		updateBombQueue();
 		updateExplodedBombs();
 		updateFinishFlames();
+		updatePowerupQueue();
+	}
+	
+	private void updatePowerupQueue() {
+		Powerup pow = PowerupQueue.poll();
+		if(pow == null) return;
+		Entity e = new Entity(pow.ID);
+		e.addComponent(pow.pc);
+		//Switch type...
+		e.addComponent(new SpriteComponent(AnimationFactory.getPowerupBomb()));
 	}
 	
 	private void updateFinishFlames() {

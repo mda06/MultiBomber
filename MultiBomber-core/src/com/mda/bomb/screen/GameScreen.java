@@ -1,6 +1,8 @@
 package com.mda.bomb.screen;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map.Entry;
 
 import com.badlogic.gdx.Gdx;
@@ -12,6 +14,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.mda.bomb.MultiBomberMain;
 import com.mda.bomb.ecs.components.BombAIComponent;
 import com.mda.bomb.ecs.components.DirectionComponent;
+import com.mda.bomb.ecs.components.FlameComponent;
 import com.mda.bomb.ecs.components.PositionComponent;
 import com.mda.bomb.ecs.components.SpriteComponent;
 import com.mda.bomb.ecs.core.Entity;
@@ -20,6 +23,7 @@ import com.mda.bomb.ecs.systems.InputSystem;
 import com.mda.bomb.ecs.systems.NameSystem;
 import com.mda.bomb.ecs.systems.SpriteSystem;
 import com.mda.bomb.entity.BombQueue;
+import com.mda.bomb.entity.FlameFactory;
 import com.mda.bomb.entity.animation.AnimationFactory;
 import com.mda.bomb.map.Map;
 import com.mda.bomb.network.sync.DirectionSync;
@@ -63,16 +67,43 @@ public class GameScreen implements Screen, GameListener {
 		updateCam();
 		updateBombQueue();
 		updateExplodedBombs();
+		updateFinishFlames();
+	}
+	
+	private void updateFinishFlames() {
+		Iterator<Entry<Integer, Entity>> it = main.getClientSide().getEngine().getSystem(EntitySystem.class).getEntities().entrySet().iterator();
+		while (it.hasNext()) {
+			Entry<Integer, Entity> item = it.next();
+			FlameComponent fc = item.getValue().getAs(FlameComponent.class);
+			if (fc != null && fc.isRenderTimeFinish) {
+				it.remove();
+			}
+		}
 	}
 	
 	private void updateExplodedBombs() {
+		List<Vector2> lstPos = new ArrayList<Vector2>();
 		Iterator<Entry<Integer, Entity>> it = main.getClientSide().getEngine().getSystem(EntitySystem.class).getEntities().entrySet().iterator();
 		while (it.hasNext()) {
 			Entry<Integer, Entity> item = it.next();
 			BombAIComponent ai = item.getValue().getAs(BombAIComponent.class);
-			if (ai != null && ai.isExploded)
+			if (ai != null && ai.isExploded) {
+				PositionComponent pc = item.getValue().getAs(PositionComponent.class);
+				Vector2 tilePos = map.getTilePositionWithAbsolutePosition(pc.x, pc.y);
+				int tx = (int)tilePos.x, ty = (int)tilePos.y;
+				int ts = map.getTileSize();
+				for(int x = tx - ai.explodeSize +1; x < tx + ai.explodeSize; x++) {
+					lstPos.add(new Vector2(x * ts, ty * ts));
+				}
+				for(int y = ty - ai.explodeSize +1; y < ty + ai.explodeSize; y++) {
+					lstPos.add(new Vector2(tx * ts, y * ts));
+				}
 				it.remove();
+			}
 		}
+		
+		for(Vector2 v2 : lstPos)
+			FlameFactory.createFlame(v2.x, v2.y);
 	}
 
 	

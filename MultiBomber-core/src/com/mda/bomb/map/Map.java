@@ -67,13 +67,13 @@ public class Map {
 		
 		Vector2 tilePos = getTilePositionWithAbsolutePosition(pc.x, pc.y);
 		int tx = (int)tilePos.x, ty = (int)tilePos.y;
-		for(int x = tx - ai.explodeSize; x < tx + ai.explodeSize; x++) {
+		for(int x = tx - ai.explodeSize +1; x < tx + ai.explodeSize; x++) {
 			Tile t = getTile(x, ty);
 			if(t != null && t.isExplosable()) {
 				tiles.get(x).put(ty, tileFactory.getTileWithID(TileIDs.TILE_GROUND));
 			}
 		}
-		for(int y = ty - ai.explodeSize; y < ty + ai.explodeSize; y++) {
+		for(int y = ty - ai.explodeSize +1; y < ty + ai.explodeSize; y++) {
 			Tile t = getTile(tx, y);
 			if(t != null && t.isExplosable()) {
 				tiles.get(tx).put(y, tileFactory.getTileWithID(TileIDs.TILE_GROUND));

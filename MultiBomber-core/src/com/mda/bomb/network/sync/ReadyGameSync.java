@@ -5,6 +5,7 @@ import com.esotericsoftware.kryonet.Connection;
 import com.mda.bomb.ecs.components.CollisionComponent;
 import com.mda.bomb.ecs.components.DirectionComponent;
 import com.mda.bomb.ecs.components.DropBombComponent;
+import com.mda.bomb.ecs.components.HealthComponent;
 import com.mda.bomb.ecs.components.InputComponent;
 import com.mda.bomb.ecs.components.MovementComponent;
 import com.mda.bomb.ecs.components.PositionComponent;
@@ -12,6 +13,7 @@ import com.mda.bomb.ecs.components.SizeComponent;
 import com.mda.bomb.ecs.core.Entity;
 import com.mda.bomb.ecs.core.EntitySystem;
 import com.mda.bomb.ecs.systems.BombAISystem;
+import com.mda.bomb.ecs.systems.FlameSystem;
 import com.mda.bomb.ecs.systems.MovementSystem;
 import com.mda.bomb.network.MyClient;
 import com.mda.bomb.network.MyServer;
@@ -40,6 +42,12 @@ public class ReadyGameSync extends BaseSync {
 			entity.addComponent(new PositionComponent(i++ * 64, 64));
 			//TODO: Add a sync for this, because the server and client have the same code for the moment
 			entity.addComponent(new DropBombComponent(5));
+			entity.addComponent(new HealthComponent(3));
+			
+			HealthSync syncHealth = new HealthSync();
+			syncHealth.entityID = entity.getID();
+			syncHealth.health = entity.getAs(HealthComponent.class).health;
+			server.getServer().sendToAllTCP(syncHealth);
 			
 			EntitySync sync = new EntitySync();
 			sync.entityID = entity.getID();
@@ -62,6 +70,7 @@ public class ReadyGameSync extends BaseSync {
 		
 		//Test for less latency, if we handle also collision add size and collision comp
 		//client.getEngine().addSystem(new MovementSystem(null));
+		client.getEngine().addSystem(new FlameSystem());
 
 		for (Entity entity : client.getEngine().getSystem(EntitySystem.class).getEntities().values()) {
 			entity.addComponent(new PositionComponent(0, 0));

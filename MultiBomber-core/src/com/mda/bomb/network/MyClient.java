@@ -13,6 +13,7 @@ import com.mda.bomb.map.Map;
 import com.mda.bomb.network.sync.BaseSync;
 import com.mda.bomb.network.sync.EnterRoomSync;
 import com.mda.bomb.network.sync.ReadyRoomDisconnectSync;
+import com.mda.bomb.screen.event.DeadListener;
 import com.mda.bomb.screen.event.DisconnectedListener;
 import com.mda.bomb.screen.event.EnterRoomListener;
 import com.mda.bomb.screen.event.GameListener;
@@ -26,6 +27,7 @@ public class MyClient extends Listener {
 	private RoomListener roomListener;
 	private DisconnectedListener disconnectedListener;
 	private GameListener gameListener;
+	private DeadListener deadListener;
 
 	private int entityID;
 	private Engine engine;
@@ -54,6 +56,14 @@ public class MyClient extends Listener {
 		engine.addSystem(new EntitySystem());
 	}
 
+	public void setDeadListener(DeadListener list) {
+		deadListener = list;
+	}
+	
+	public DeadListener getDeadListener() {
+		return deadListener;
+	}
+	
 	public void setEnterRoomListener(EnterRoomListener list) {
 		enterRoomListener = list;
 	}

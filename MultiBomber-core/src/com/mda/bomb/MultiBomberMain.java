@@ -3,6 +3,7 @@ package com.mda.bomb;
 import com.badlogic.gdx.Game;
 import com.mda.bomb.network.MyClient;
 import com.mda.bomb.screen.ConnectScreen;
+import com.mda.bomb.screen.DeadScreen;
 import com.mda.bomb.screen.DisconnectedScreen;
 import com.mda.bomb.screen.GameScreen;
 import com.mda.bomb.screen.RoomScreen;
@@ -24,6 +25,7 @@ public class MultiBomberMain extends Game implements OpenServerListener {
 		needToDisposeClient = true;
 		clientSide = new MyClient();
 		clientSide.setDisconnectedListener(new DisconnectedScreen(this));
+		clientSide.setDeadListener(new DeadScreen(this));
 		connectScreen = new ConnectScreen(this, clientSide);
 		roomScreen = new RoomScreen(this, clientSide);
 		connectScreen.setOpenServerListener(this);

@@ -1,7 +1,9 @@
 package com.mda.bomb.network;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map.Entry;
 
 import com.badlogic.gdx.math.Vector2;
@@ -10,6 +12,8 @@ import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
 import com.esotericsoftware.kryonet.Server;
 import com.mda.bomb.ecs.components.BombAIComponent;
+import com.mda.bomb.ecs.components.HealthComponent;
+import com.mda.bomb.ecs.components.NameComponent;
 import com.mda.bomb.ecs.components.PositionComponent;
 import com.mda.bomb.ecs.core.Engine;
 import com.mda.bomb.ecs.core.Entity;
@@ -18,8 +22,10 @@ import com.mda.bomb.entity.BombQueue;
 import com.mda.bomb.map.Map;
 import com.mda.bomb.network.sync.BaseSync;
 import com.mda.bomb.network.sync.BombExplodeSync;
+import com.mda.bomb.network.sync.DeadSync;
 import com.mda.bomb.network.sync.DropBombSync;
 import com.mda.bomb.network.sync.EntitySync;
+import com.mda.bomb.network.sync.HealthSync;
 import com.mda.bomb.network.sync.ReadyRoomDisconnectSync;
 import com.mda.bomb.screen.event.BombExplodeListener;
 import com.mda.bomb.util.Constants;
@@ -151,9 +157,70 @@ public class MyServer extends Listener implements BombExplodeListener {
 			server.stop();
 	}
 
+	private void handleEntityExplosions(Entity e) {
+		BombAIComponent ai = e.getAs(BombAIComponent.class);
+		PositionComponent pc = e.getAs(PositionComponent.class);
+		if(ai == null || pc == null) return;
+		
+		Vector2 tilePos = map.getTilePositionWithAbsolutePosition(pc.x, pc.y);
+		int tx = (int)tilePos.x, ty = (int)tilePos.y;
+		List<Integer> lstOfDeadEntities = new ArrayList<Integer>();
+		int minX = tx - ai.explodeSize, maxX = tx + ai.explodeSize;
+		int minY = ty - ai.explodeSize, maxY = ty + ai.explodeSize;
+		for (Entity entity : engine.getSystem(EntitySystem.class).getEntities().values()) {
+			HealthComponent hc = entity.getAs(HealthComponent.class);
+			PositionComponent entityPos = entity.getAs(PositionComponent.class);
+			if(hc == null || entityPos == null) continue;
+			Vector2 entityTilePos = map.getTilePositionWithAbsolutePosition(entityPos.x, entityPos.y);
+			
+			if(entityTilePos.x > minX && entityTilePos.x < maxX && entityTilePos.y == ty) {
+				if(hitEntityWithBomb(entity)) {
+					lstOfDeadEntities.add(entity.getID());
+				}
+				//When touch 1, don't need to test the other pos
+				continue;
+			}
+			if(entityTilePos.y > minY && entityTilePos.y < maxY && entityTilePos.x == tx) {
+				if(hitEntityWithBomb(entity)) {
+					lstOfDeadEntities.add(entity.getID());
+				}
+			}
+		}
+		
+		for(Integer i : lstOfDeadEntities) {
+			Entity eDead = getEntityWithID(i);
+			DeadSync sync = new DeadSync();
+			sync.entityID = eDead.getID();
+			server.sendToAllTCP(sync);
+			
+			engine.getSystem(EntitySystem.class).removeEntity(eDead);
+		}
+		
+		//Check size of array 1 entity = WIN
+		//Check size of array 0 entity = NEW GAME
+	}
+	
+	private boolean hitEntityWithBomb(Entity e) {
+		boolean isDead = false;
+		HealthComponent hc = e.getAs(HealthComponent.class);
+		hc.health--;
+		ServerMessages.serverIncomming.add(e.getAs(NameComponent.class).name + " hitted now has " + hc.health + " health.");
+		if(hc.health <= 0) {
+			hc.health = 0;
+			isDead = true;
+			ServerMessages.serverIncomming.add(e.getAs(NameComponent.class).name + " is dead !");
+		}
+		HealthSync sync = new HealthSync();
+		sync.entityID = e.getID();
+		sync.health = hc.health;
+		server.sendToAllTCP(sync);
+		return isDead;
+	}
+	
 	@Override
 	public void explode(Entity e) {
 		map.explode(e);
+		handleEntityExplosions(e);
 		ServerMessages.serverIncomming.add("Bomb n°" + e.getID() + " just explosed.");
 		BombExplodeSync sync = new BombExplodeSync();
 		sync.bombID = e.getID();

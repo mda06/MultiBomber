@@ -38,6 +38,7 @@ public class KryoRegisters {
 		kryo.register(CollisionCompSync.class);
 		kryo.register(DeadSync.class);
 		kryo.register(PowerupComponent.class);
+		kryo.register(PowerupComponent.PowerupType.class);
 		kryo.register(PowerupSpawnSync.class);
 	}
 }

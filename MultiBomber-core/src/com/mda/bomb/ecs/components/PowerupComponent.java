@@ -10,6 +10,10 @@ public class PowerupComponent extends Component{
 	public PowerupType type;
 	public boolean isUsed;
 	
+	public PowerupComponent() {
+		this(PowerupType.BOMB);
+	}
+	
 	public PowerupComponent(PowerupType type) {
 		this.type = type;
 		isUsed = false;

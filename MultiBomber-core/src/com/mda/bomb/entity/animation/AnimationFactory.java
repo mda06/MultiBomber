@@ -48,7 +48,7 @@ public class AnimationFactory {
 	}
 
 	public static SimpleAnimation getFlameAnimation() {
-		SimpleAnimation anim = new SimpleAnimation(5, "Sprites/Flame/Flame_f0");
+		SimpleAnimation anim = new SimpleAnimation(5, "Sprites/Flame/Flame_F0");
 		anim.getAnimation().setFrameDuration(.3f);
 		anim.getAnimation().setPlayMode(PlayMode.LOOP);
 		return anim;

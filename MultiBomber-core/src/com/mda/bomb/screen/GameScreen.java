@@ -10,6 +10,7 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.mda.bomb.MultiBomberMain;
 import com.mda.bomb.ecs.components.BombAIComponent;
@@ -71,7 +72,7 @@ public class GameScreen implements Screen, GameListener {
 		}
 		
 		main.getClientSide().getEngine().update(dt);
-		updateCam();
+		updateCam(dt);
 		updateBombQueue();
 		updateExplodedBombs();
 		updateFinishFlames();
@@ -133,10 +134,13 @@ public class GameScreen implements Screen, GameListener {
 		e.addComponent(new SpriteComponent(AnimationFactory.getBombAnimation()));
 	}
 	
-	private void updateCam() {
+	private void updateCam(float dt) {
 		Entity e = main.getClientSide().getMyEntity();
 		PositionComponent pc = e.getAs(PositionComponent.class);
-		float x = pc.x, y = pc.y;
+
+		float camSpeed = 3.5f;
+		float x = MathUtils.lerp(cam.position.x, pc.x,  camSpeed * dt);
+		float y = MathUtils.lerp(cam.position.y, pc.y,  camSpeed * dt);
 		
 		if(x < Gdx.graphics.getWidth()/2) x = Gdx.graphics.getWidth() / 2;
 		else if(x > map.getAbsoluteWidth() - Gdx.graphics.getWidth() / 2) x = map.getAbsoluteWidth() - Gdx.graphics.getWidth() / 2;

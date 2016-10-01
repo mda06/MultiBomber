@@ -1,9 +1,7 @@
 package com.mda.bomb.network;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map.Entry;
 
 import com.badlogic.gdx.math.Vector2;
@@ -20,6 +18,7 @@ import com.mda.bomb.ecs.core.Engine;
 import com.mda.bomb.ecs.core.Entity;
 import com.mda.bomb.ecs.core.EntitySystem;
 import com.mda.bomb.entity.BombQueue;
+import com.mda.bomb.entity.EntityQueue;
 import com.mda.bomb.map.Map;
 import com.mda.bomb.network.sync.BaseSync;
 import com.mda.bomb.network.sync.BombExplodeSync;
@@ -61,8 +60,8 @@ public class MyServer extends Listener implements BombExplodeListener, PowerupLi
 		try {
 			server.bind(Constants.PORT_TCP, Constants.PORT_UDP);
 			server.start();// Reduce size of arrays
-			ServerMessages.serverInfo.add("Server launched on port TCP: " + Constants.PORT_TCP + ", UDP: "
-					+ Constants.PORT_UDP + " on IP: " + IPUtils.getMyIP());
+			ServerMessages.serverInfo
+					.add("Server launched on port TCP: " + Constants.PORT_TCP + ", UDP: " + Constants.PORT_UDP + " on IP: " + IPUtils.getMyIP());
 		} catch (IOException e) {
 			ServerMessages.serverInfo.add("Exception when start server");
 		}
@@ -74,7 +73,27 @@ public class MyServer extends Listener implements BombExplodeListener, PowerupLi
 			updateEntitiesInGame(dt);
 			updateBombQueue();
 			updateExplodedBombs();
+			updateEntitiesToRemove();
 		}
+	}
+
+	private void updateEntitiesToRemove() {
+		Integer id = null;
+		while ((id = EntityQueue.pollEntityToRemove()) != null) {
+			engine.getSystem(EntitySystem.class).removeEntity(id);
+			ServerMessages.serverInfo.add("There are actually " + engine.getSystem(EntitySystem.class).getEntities().size() + " players in the room.");
+			//BOMB = NO ENTITY !!
+			if(engine.getSystem(EntitySystem.class).getEntities().size() == 0) {
+				engine.setGameStarted(false);
+				ServerMessages.serverInfo.add("No players anymore in the game. The game is finished and people can again connect to the room.");
+			}
+		}
+
+		// Check server state: Room - Game - Finish 
+		// Add player comp for the state and to easy know how many players are connected
+		// Because pwoerups/bombs are also entity in entitySystem
+		// Check size of array 1 entity = WIN
+		// Check size of array 0 entity = NEW GAME
 	}
 
 	private void updateExplodedBombs() {
@@ -82,24 +101,23 @@ public class MyServer extends Listener implements BombExplodeListener, PowerupLi
 		while (it.hasNext()) {
 			Entry<Integer, Entity> item = it.next();
 			BombAIComponent ai = item.getValue().getAs(BombAIComponent.class);
-			if (ai != null && ai.isExploded)
-				it.remove();
+			if (ai != null && ai.isExploded) it.remove();
 		}
 	}
 
 	private void updateBombQueue() {
-		BombQueue.Bomb bomb = BombQueue.poll();
-		if (bomb == null)
-			return;
-		Entity e = new Entity();
-		e.addComponent(bomb.pc);
-		e.addComponent(new BombAIComponent());
-		DropBombSync sync = new DropBombSync();
-		ServerMessages.serverIncomming.add("New Bomb created with ID: " + e.getID());
-		sync.bombID = e.getID();
-		sync.bombPos = new Vector2(bomb.pc.x, bomb.pc.y);
-		sync.entityID = bomb.ID;
-		server.sendToAllTCP(sync);
+		BombQueue.Bomb bomb = null;
+		while ((bomb = BombQueue.poll()) != null) {
+			Entity e = new Entity();
+			e.addComponent(bomb.pc);
+			e.addComponent(new BombAIComponent());
+			DropBombSync sync = new DropBombSync();
+			ServerMessages.serverIncomming.add("New Bomb created with ID: " + e.getID());
+			sync.bombID = e.getID();
+			sync.bombPos = new Vector2(bomb.pc.x, bomb.pc.y);
+			sync.entityID = bomb.ID;
+			server.sendToAllTCP(sync);
+		}
 	}
 
 	private void updateEntitiesInGame(float dt) {
@@ -126,21 +144,19 @@ public class MyServer extends Listener implements BombExplodeListener, PowerupLi
 
 	@Override
 	public void connected(Connection connection) {
-		ServerMessages.serverInfo.add("New client connected, ID: " + connection.getID() + ", Info: "
-				+ connection.getRemoteAddressTCP() + ". Total connected : " + server.getConnections().length);
-		if (ServerMessages.serverInfo.size > MAX_MESSAGES)
-			ServerMessages.serverInfo.removeIndex(0);
+		ServerMessages.serverInfo.add("New client connected, ID: " + connection.getID() + ", Info: " + connection.getRemoteAddressTCP()
+				+ ". Total connected : " + server.getConnections().length);
+		if (ServerMessages.serverInfo.size > MAX_MESSAGES) ServerMessages.serverInfo.removeIndex(0);
 	}
 
 	@Override
 	public void disconnected(Connection connection) {
-		ServerMessages.serverInfo.add("Client disconnected, ID: " + connection.getID() + ", Info: "
-				+ connection.getRemoteAddressTCP() + ". Total connected : " + server.getConnections().length);
+		ServerMessages.serverInfo.add("Client disconnected, ID: " + connection.getID() + ", Info: " + connection.getRemoteAddressTCP()
+				+ ". Total connected : " + server.getConnections().length);
 		ReadyRoomDisconnectSync sync = new ReadyRoomDisconnectSync();
 		sync.entityID = connection.getID();
 		sync.handleServer(this, connection);
-		if (ServerMessages.serverInfo.size > MAX_MESSAGES)
-			ServerMessages.serverInfo.removeIndex(0);
+		if (ServerMessages.serverInfo.size > MAX_MESSAGES) ServerMessages.serverInfo.removeIndex(0);
 	}
 
 	public Map getMap() {
@@ -156,59 +172,55 @@ public class MyServer extends Listener implements BombExplodeListener, PowerupLi
 	}
 
 	public void dispose() {
-		if (server != null)
-			server.stop();
+		if (server != null) server.stop();
 	}
 
 	private void handleEntityExplosions(Entity e) {
 		BombAIComponent ai = e.getAs(BombAIComponent.class);
 		PositionComponent pc = e.getAs(PositionComponent.class);
-		if(ai == null || pc == null) return;
-		
+		if (ai == null || pc == null) return;
+
 		Vector2 tilePos = map.getTilePositionWithAbsolutePosition(pc.x, pc.y);
-		int tx = (int)tilePos.x, ty = (int)tilePos.y;
-		List<Integer> lstOfDeadEntities = new ArrayList<Integer>();
+		int tx = (int) tilePos.x, ty = (int) tilePos.y;
 		int minX = tx - ai.explodeSize, maxX = tx + ai.explodeSize;
 		int minY = ty - ai.explodeSize, maxY = ty + ai.explodeSize;
 		for (Entity entity : engine.getSystem(EntitySystem.class).getEntities().values()) {
 			HealthComponent hc = entity.getAs(HealthComponent.class);
 			PositionComponent entityPos = entity.getAs(PositionComponent.class);
-			if(hc == null || entityPos == null) continue;
+			if (hc == null || entityPos == null) continue;
 			Vector2 entityTilePos = map.getTilePositionWithAbsolutePosition(entityPos.x, entityPos.y);
-			
-			if(entityTilePos.x > minX && entityTilePos.x < maxX && entityTilePos.y == ty) {
-				if(hitEntityWithBomb(entity)) {
-					lstOfDeadEntities.add(entity.getID());
+
+			if (entityTilePos.x > minX && entityTilePos.x < maxX && entityTilePos.y == ty) {
+				if (hitEntityWithBomb(entity)) {
+					int entityID = entity.getID();
+					sendDeadSync(entityID);
+					EntityQueue.addToQueueToRemove(entityID);
 				}
-				//When touch 1, don't need to test the other pos
+				// When touch 1, don't need to test the other pos
 				continue;
 			}
-			if(entityTilePos.y > minY && entityTilePos.y < maxY && entityTilePos.x == tx) {
-				if(hitEntityWithBomb(entity)) {
-					lstOfDeadEntities.add(entity.getID());
+			if (entityTilePos.y > minY && entityTilePos.y < maxY && entityTilePos.x == tx) {
+				if (hitEntityWithBomb(entity)) {
+					int entityID = entity.getID();
+					sendDeadSync(entityID);
+					EntityQueue.addToQueueToRemove(entityID);
 				}
 			}
 		}
-		
-		for(Integer i : lstOfDeadEntities) {
-			Entity eDead = getEntityWithID(i);
-			DeadSync sync = new DeadSync();
-			sync.entityID = eDead.getID();
-			server.sendToAllTCP(sync);
-			
-			engine.getSystem(EntitySystem.class).removeEntity(eDead);
-		}
-		
-		//Check size of array 1 entity = WIN
-		//Check size of array 0 entity = NEW GAME
 	}
 	
+	private void sendDeadSync(int entityID) {
+		DeadSync sync = new DeadSync();
+		sync.entityID = entityID;
+		server.sendToAllTCP(sync);
+	}
+
 	private boolean hitEntityWithBomb(Entity e) {
 		boolean isDead = false;
 		HealthComponent hc = e.getAs(HealthComponent.class);
 		hc.health--;
 		ServerMessages.serverIncomming.add(e.getAs(NameComponent.class).name + " hitted now has " + hc.health + " health.");
-		if(hc.health <= 0) {
+		if (hc.health <= 0) {
 			hc.health = 0;
 			isDead = true;
 			ServerMessages.serverIncomming.add(e.getAs(NameComponent.class).name + " is dead !");
@@ -219,7 +231,7 @@ public class MyServer extends Listener implements BombExplodeListener, PowerupLi
 		server.sendToAllTCP(sync);
 		return isDead;
 	}
-	
+
 	@Override
 	public void explode(Entity e) {
 		map.explode(e);

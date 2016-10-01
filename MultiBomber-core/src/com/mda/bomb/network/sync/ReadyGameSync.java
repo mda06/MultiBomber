@@ -45,7 +45,7 @@ public class ReadyGameSync extends BaseSync {
 				entity.getAs(PositionComponent.class).y += 33;
 			}
 			//TODO: Add a sync for this, because the server and client have the same code for the moment
-			entity.addComponent(new DropBombComponent(5));
+			entity.addComponent(new DropBombComponent(10));
 			entity.addComponent(new HealthComponent(3));
 			
 			CollisionCompSync ccSync = new CollisionCompSync();
@@ -85,7 +85,7 @@ public class ReadyGameSync extends BaseSync {
 		}
 
 		client.getMyEntity().addComponent(new InputComponent());
-		client.getMyEntity().addComponent(new DropBombComponent(5));
+		client.getMyEntity().addComponent(new DropBombComponent(10));
 		
 		if(client.getGameListener() != null)
 			client.getGameListener().startGame();

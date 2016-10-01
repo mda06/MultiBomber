@@ -4,6 +4,7 @@ import com.esotericsoftware.kryonet.Connection;
 import com.mda.bomb.ecs.components.NameComponent;
 import com.mda.bomb.ecs.core.Entity;
 import com.mda.bomb.ecs.core.EntitySystem;
+import com.mda.bomb.entity.EntityQueue;
 import com.mda.bomb.network.MyClient;
 import com.mda.bomb.network.MyServer;
 import com.mda.bomb.network.ServerMessages;
@@ -21,13 +22,8 @@ public class ReadyRoomDisconnectSync extends BaseSync{
 			ServerMessages.serverIncomming.add("ID(" + entityID + ") is now disconnected.");
 		}
 		
-		((EntitySystem) server.getEngine().getSystem(EntitySystem.class)).removeEntity(entityID);	
-		ServerMessages.serverInfo.add("There are actually " + server.getEngine().getSystem(EntitySystem.class).getEntities().size() + " players in the room.");
-		//BOMB = NO ENTITY !!
-		if(server.getEngine().getSystem(EntitySystem.class).getEntities().size() == 0) {
-			server.getEngine().setGameStarted(false);
-			ServerMessages.serverInfo.add("No players anymore in the game. The game is finished and people can again connect to the room.");
-		}
+		//server.getEngine().getSystem(EntitySystem.class).removeEntity(entityID);	
+		EntityQueue.addToQueueToRemove(entityID);
 		server.getServer().sendToAllExceptTCP(connection.getID(), this);
 	}
 	

@@ -14,17 +14,16 @@ public class DropBombSync extends BaseSync {
 
 	public int entityID, bombID;
 	public Vector2 bombPos;
-	
+
 	@Override
 	public void handleServer(MyServer server, Connection connection) {
 		Entity e = server.getEntityWithID(entityID);
 		DropBombComponent dropBombComp = e.getAs(DropBombComponent.class);
-		if(dropBombComp != null && dropBombComp.nbOfBombs > 0) {
+		if (dropBombComp != null && dropBombComp.nbOfBombs > 0) {
 			dropBombComp.nbOfBombs--;
 			CollisionComponent cc = e.getAs(CollisionComponent.class);
 			Vector2 off = new Vector2();
-			if(cc != null)
-				off = cc.offset;
+			if (cc != null) off = cc.offset;
 			BombQueue.Bomb b = new BombQueue.Bomb(new PositionComponent(bombPos.x + off.x, bombPos.y + off.y), entityID);
 			BombQueue.addToQueue(b);
 		}
@@ -32,12 +31,12 @@ public class DropBombSync extends BaseSync {
 
 	@Override
 	public void handleClient(MyClient client, Connection connection) {
-		if(entityID == client.getEntityID()) {
+		if (entityID == client.getEntityID()) {
 			DropBombComponent dropBombComp = client.getMyEntity().getAs(DropBombComponent.class);
 			dropBombComp.nbOfBombs--;
 		}
-		//Add a queue for adding bombs...
-		//Can't use OpenGL in this context
+		// Add a queue for adding bombs...
+		// Can't use OpenGL in this context
 		BombQueue.Bomb b = new BombQueue.Bomb(new PositionComponent(bombPos.x, bombPos.y), bombID);
 		BombQueue.addToQueue(b);
 	}

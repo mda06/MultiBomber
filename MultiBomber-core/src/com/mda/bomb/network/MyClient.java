@@ -11,8 +11,8 @@ import com.mda.bomb.ecs.core.Entity;
 import com.mda.bomb.ecs.core.EntitySystem;
 import com.mda.bomb.map.Map;
 import com.mda.bomb.network.sync.BaseSync;
+import com.mda.bomb.network.sync.DisconnectSync;
 import com.mda.bomb.network.sync.EnterRoomSync;
-import com.mda.bomb.network.sync.ReadyRoomDisconnectSync;
 import com.mda.bomb.screen.event.DeadListener;
 import com.mda.bomb.screen.event.DisconnectedListener;
 import com.mda.bomb.screen.event.EnterRoomListener;
@@ -168,7 +168,7 @@ public class MyClient extends Listener {
 
 	public void dispose() {
 		if (client != null) {
-			ReadyRoomDisconnectSync sync = new ReadyRoomDisconnectSync();
+			DisconnectSync sync = new DisconnectSync();
 			sync.entityID = entityID;
 			sendTCP(sync);
 			client.stop();

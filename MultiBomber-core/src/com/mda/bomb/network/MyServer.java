@@ -23,11 +23,11 @@ import com.mda.bomb.map.Map;
 import com.mda.bomb.network.sync.BaseSync;
 import com.mda.bomb.network.sync.BombExplodeSync;
 import com.mda.bomb.network.sync.DeadSync;
+import com.mda.bomb.network.sync.DisconnectSync;
 import com.mda.bomb.network.sync.DropBombSync;
 import com.mda.bomb.network.sync.EntitySync;
 import com.mda.bomb.network.sync.HealthSync;
 import com.mda.bomb.network.sync.PowerupSpawnSync;
-import com.mda.bomb.network.sync.ReadyRoomDisconnectSync;
 import com.mda.bomb.screen.event.BombExplodeListener;
 import com.mda.bomb.screen.event.PowerupListener;
 import com.mda.bomb.util.Constants;
@@ -153,7 +153,7 @@ public class MyServer extends Listener implements BombExplodeListener, PowerupLi
 	public void disconnected(Connection connection) {
 		ServerMessages.serverInfo.add("Client disconnected, ID: " + connection.getID() + ", Info: " + connection.getRemoteAddressTCP()
 				+ ". Total connected : " + server.getConnections().length);
-		ReadyRoomDisconnectSync sync = new ReadyRoomDisconnectSync();
+		DisconnectSync sync = new DisconnectSync();
 		sync.entityID = connection.getID();
 		sync.handleServer(this, connection);
 		if (ServerMessages.serverInfo.size > MAX_MESSAGES) ServerMessages.serverInfo.removeIndex(0);

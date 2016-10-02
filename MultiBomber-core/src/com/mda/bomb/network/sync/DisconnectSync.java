@@ -9,7 +9,7 @@ import com.mda.bomb.network.MyClient;
 import com.mda.bomb.network.MyServer;
 import com.mda.bomb.network.ServerMessages;
 
-public class ReadyRoomDisconnectSync extends BaseSync{
+public class DisconnectSync extends BaseSync{
 	public int entityID;
 	
 	@Override

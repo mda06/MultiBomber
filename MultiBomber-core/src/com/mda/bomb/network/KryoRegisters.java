@@ -8,6 +8,7 @@ import com.mda.bomb.network.sync.BombExplodeSync;
 import com.mda.bomb.network.sync.CollisionCompSync;
 import com.mda.bomb.network.sync.DeadSync;
 import com.mda.bomb.network.sync.DirectionSync;
+import com.mda.bomb.network.sync.DisconnectSync;
 import com.mda.bomb.network.sync.DropBombSync;
 import com.mda.bomb.network.sync.EnterRoomSync;
 import com.mda.bomb.network.sync.EntitySync;
@@ -15,7 +16,6 @@ import com.mda.bomb.network.sync.HealthSync;
 import com.mda.bomb.network.sync.InitMapSync;
 import com.mda.bomb.network.sync.PowerupSpawnSync;
 import com.mda.bomb.network.sync.ReadyGameSync;
-import com.mda.bomb.network.sync.ReadyRoomDisconnectSync;
 import com.mda.bomb.network.sync.ReadyRoomListenerSync;
 
 public class KryoRegisters {
@@ -23,7 +23,7 @@ public class KryoRegisters {
 		kryo.register(EntitySync.class);
 		kryo.register(EnterRoomSync.class);
 		kryo.register(ReadyRoomListenerSync.class);
-		kryo.register(ReadyRoomDisconnectSync.class);
+		kryo.register(DisconnectSync.class);
 		kryo.register(ReadyGameSync.class);
 		kryo.register(DirectionComponent.class);
 		kryo.register(DirectionComponent.VerticalDirection.class);

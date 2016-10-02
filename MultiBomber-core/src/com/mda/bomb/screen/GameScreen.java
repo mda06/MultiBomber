@@ -32,8 +32,8 @@ import com.mda.bomb.entity.PowerupQueue;
 import com.mda.bomb.entity.PowerupQueue.Powerup;
 import com.mda.bomb.entity.animation.AnimationFactory;
 import com.mda.bomb.map.Map;
-import com.mda.bomb.network.sync.DirectionSync;
-import com.mda.bomb.network.sync.DropBombSync;
+import com.mda.bomb.network.sync.game.DirectionSync;
+import com.mda.bomb.network.sync.game.DropBombSync;
 import com.mda.bomb.screen.event.GameListener;
 
 public class GameScreen implements Screen, GameListener {

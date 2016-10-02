@@ -1,10 +1,11 @@
-package com.mda.bomb.network.sync;
+package com.mda.bomb.network.sync.game;
 
 import com.esotericsoftware.kryonet.Connection;
 import com.mda.bomb.ecs.components.BombAIComponent;
 import com.mda.bomb.ecs.core.Entity;
 import com.mda.bomb.network.MyClient;
 import com.mda.bomb.network.MyServer;
+import com.mda.bomb.network.sync.BaseSync;
 
 public class BombExplodeSync extends BaseSync  {
 

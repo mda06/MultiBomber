@@ -23,7 +23,7 @@ import com.mda.bomb.ecs.core.EntitySystem;
 import com.mda.bomb.entity.animation.AnimationFactory;
 import com.mda.bomb.entity.animation.SimpleAnimation;
 import com.mda.bomb.network.MyClient;
-import com.mda.bomb.network.sync.ReadyRoomListenerSync;
+import com.mda.bomb.network.sync.room.ReadyRoomListenerSync;
 import com.mda.bomb.screen.actor.BackgroundActor;
 import com.mda.bomb.screen.event.RoomListener;
 

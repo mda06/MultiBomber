@@ -1,4 +1,4 @@
-package com.mda.bomb.network.sync;
+package com.mda.bomb.network.sync.room;
 
 import com.esotericsoftware.kryonet.Connection;
 import com.mda.bomb.ecs.components.NameComponent;
@@ -9,6 +9,8 @@ import com.mda.bomb.ecs.core.EntitySystem;
 import com.mda.bomb.network.MyClient;
 import com.mda.bomb.network.MyServer;
 import com.mda.bomb.network.ServerMessages;
+import com.mda.bomb.network.sync.BaseSync;
+import com.mda.bomb.network.sync.game.ReadyGameSync;
 
 public class ReadyRoomListenerSync extends BaseSync {
 	public int entityID;

@@ -12,7 +12,7 @@ import com.mda.bomb.ecs.core.EntitySystem;
 import com.mda.bomb.map.Map;
 import com.mda.bomb.network.sync.BaseSync;
 import com.mda.bomb.network.sync.DisconnectSync;
-import com.mda.bomb.network.sync.EnterRoomSync;
+import com.mda.bomb.network.sync.room.EnterRoomSync;
 import com.mda.bomb.screen.event.DeadListener;
 import com.mda.bomb.screen.event.DisconnectedListener;
 import com.mda.bomb.screen.event.EnterRoomListener;

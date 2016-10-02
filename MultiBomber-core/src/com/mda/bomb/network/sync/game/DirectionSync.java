@@ -1,6 +1,7 @@
 package com.mda.bomb.network.sync.game;
 
 import com.esotericsoftware.kryonet.Connection;
+import com.mda.bomb.ecs.components.ClientStateComponent.ClientState;
 import com.mda.bomb.ecs.components.DirectionComponent;
 import com.mda.bomb.ecs.core.Entity;
 import com.mda.bomb.ecs.core.EntitySystem;
@@ -18,7 +19,7 @@ public class DirectionSync extends BaseSync {
 		Entity e = server.getEntityWithID(entityID);
 		e.getAs(DirectionComponent.class).horizontalDirection = directionComp.horizontalDirection;
 		e.getAs(DirectionComponent.class).verticalDirection = directionComp.verticalDirection;
-		server.getServer().sendToAllTCP(this);
+		server.sendToAll(this, ClientState.GAME, true);
 	}
 
 	@Override

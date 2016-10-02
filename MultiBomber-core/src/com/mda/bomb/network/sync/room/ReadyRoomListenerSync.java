@@ -4,6 +4,7 @@ import com.esotericsoftware.kryonet.Connection;
 import com.mda.bomb.ecs.components.NameComponent;
 import com.mda.bomb.ecs.components.ReadyRoomComponent;
 import com.mda.bomb.ecs.components.SpriteComponent;
+import com.mda.bomb.ecs.components.ClientStateComponent.ClientState;
 import com.mda.bomb.ecs.core.Entity;
 import com.mda.bomb.ecs.core.EntitySystem;
 import com.mda.bomb.network.MyClient;
@@ -26,9 +27,10 @@ public class ReadyRoomListenerSync extends BaseSync {
 		e.getAs(SpriteComponent.class).ID = selectedSprite;
 		ServerMessages.serverIncomming.add(name + "(" + entityID + "), sprite n°" + selectedSprite + ", is" + (isReady ? "" : " not") + " ready.");
 		ServerMessages.serverInfo.add("There are actually " + server.getEngine().getSystem(EntitySystem.class).getEntities().size() + " players in the room.");
-		server.getServer().sendToAllTCP(this);
+		server.sendToAll(this, ClientState.ROOM, true);
 		
-		//Check if everybody is ready for the game
+		//Check if everybody is ready for the game and that no game's is running
+		if(server.getEngine().isGameStarted()) return;
 		boolean readyForGame = true;
 		for(Entity entity : server.getEngine().getSystem(EntitySystem.class).getEntities().values()) {
 			if(!entity.getAs(ReadyRoomComponent.class).isReady) {

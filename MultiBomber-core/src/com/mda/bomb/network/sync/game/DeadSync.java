@@ -17,7 +17,6 @@ public class DeadSync extends BaseSync {
 		//Entity e = client.getEntityWithID(entityID);
 		
 		EntityQueue.addToQueueToRemove(entityID);
-		//client.getEngine().getSystem(EntitySystem.class).removeEntity(entityID);
 		if(entityID == client.getEntityID()) {
 			client.getDeadListener().entityIsDead();
 		}

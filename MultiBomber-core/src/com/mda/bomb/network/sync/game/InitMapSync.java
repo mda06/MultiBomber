@@ -1,6 +1,7 @@
 package com.mda.bomb.network.sync.game;
 
 import com.esotericsoftware.kryonet.Connection;
+import com.mda.bomb.ecs.components.ClientStateComponent.ClientState;
 import com.mda.bomb.network.MyClient;
 import com.mda.bomb.network.MyServer;
 import com.mda.bomb.network.sync.BaseSync;
@@ -12,7 +13,7 @@ public class InitMapSync extends BaseSync {
 	public void handleServer(MyServer server, Connection connection) {
 		mapFile = "maps/map1.txt";
 		server.getMap().initMap(mapFile);
-		server.getServer().sendToAllTCP(this);
+		server.sendToAll(this, ClientState.GAME, true);
 	}
 
 	public void handleClient(MyClient client, Connection connection) {

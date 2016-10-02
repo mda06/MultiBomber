@@ -2,6 +2,8 @@ package com.mda.bomb.network.sync.game;
 
 import com.badlogic.gdx.math.Vector2;
 import com.esotericsoftware.kryonet.Connection;
+import com.mda.bomb.ecs.components.ClientStateComponent;
+import com.mda.bomb.ecs.components.ClientStateComponent.ClientState;
 import com.mda.bomb.ecs.components.CollisionComponent;
 import com.mda.bomb.ecs.components.DirectionComponent;
 import com.mda.bomb.ecs.components.DropBombComponent;
@@ -26,8 +28,8 @@ public class ReadyGameSync extends BaseSync {
 	public void handleServer(MyServer server, Connection connection) {
 		ServerMessages.serverInfo.add("A new Game is starting !");
 		
-		server.getServer().sendToAllTCP(this);
-
+		server.sendToAll(this, ClientState.ROOM, true);
+		
 		//Init maps and everything
 		new InitMapSync().handleServer(server, connection);
 		server.getEngine().addSystem(new MovementSystem(server.getMap()));
@@ -48,28 +50,29 @@ public class ReadyGameSync extends BaseSync {
 			//TODO: Add a sync for this, because the server and client have the same code for the moment
 			entity.addComponent(new DropBombComponent(10));
 			entity.addComponent(new HealthComponent(3));
+			entity.getAs(ClientStateComponent.class).clientState = ClientState.GAME;
 			
 			CollisionCompSync ccSync = new CollisionCompSync();
 			ccSync.entityID = entity.getID();
 			ccSync.size = entity.getAs(CollisionComponent.class).size;
 			ccSync.offset = entity.getAs(CollisionComponent.class).offset;
-			server.getServer().sendToAllTCP(ccSync);
+			server.sendToAll(ccSync, ClientState.GAME, true);
 			
 			HealthSync syncHealth = new HealthSync();
 			syncHealth.entityID = entity.getID();
 			syncHealth.health = entity.getAs(HealthComponent.class).health;
-			server.getServer().sendToAllTCP(syncHealth);
+			server.sendToAll(syncHealth, ClientState.GAME, true);
 			
 			EntitySync sync = new EntitySync();
 			sync.entityID = entity.getID();
 			sync.posX = entity.getAs(PositionComponent.class).x;
 			sync.posY = entity.getAs(PositionComponent.class).y;
-			server.getServer().sendToAllTCP(sync);
+			server.sendToAll(sync, ClientState.GAME, true);
 			
 			DirectionSync syncDir = new DirectionSync();
 			syncDir.entityID = entity.getID();
 			syncDir.directionComp = entity.getAs(DirectionComponent.class);
-			server.getServer().sendToAllTCP(syncDir);
+			server.sendToAll(syncDir, ClientState.GAME, true);
 		}
 
 		server.getEngine().setGameStarted(true);

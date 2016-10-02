@@ -22,7 +22,6 @@ public class DisconnectSync extends BaseSync{
 			ServerMessages.serverIncomming.add("ID(" + entityID + ") is now disconnected.");
 		}
 		
-		//server.getEngine().getSystem(EntitySystem.class).removeEntity(entityID);	
 		EntityQueue.addToQueueToRemove(entityID);
 		server.getServer().sendToAllExceptTCP(connection.getID(), this);
 	}

@@ -10,6 +10,8 @@ import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
 import com.esotericsoftware.kryonet.Server;
 import com.mda.bomb.ecs.components.BombAIComponent;
+import com.mda.bomb.ecs.components.ClientStateComponent;
+import com.mda.bomb.ecs.components.ClientStateComponent.ClientState;
 import com.mda.bomb.ecs.components.CollisionComponent;
 import com.mda.bomb.ecs.components.HealthComponent;
 import com.mda.bomb.ecs.components.NameComponent;
@@ -82,16 +84,18 @@ public class MyServer extends Listener implements BombExplodeListener, PowerupLi
 		Integer id = null;
 		while ((id = EntityQueue.pollEntityToRemove()) != null) {
 			engine.getSystem(EntitySystem.class).removeEntity(id);
-			ServerMessages.serverInfo.add("There are actually " + engine.getSystem(EntitySystem.class).getEntities().size() + " players in the room.");
-			//BOMB = NO ENTITY !!
-			if(engine.getSystem(EntitySystem.class).getEntities().size() == 0) {
+			ServerMessages.serverInfo
+					.add("There are actually " + engine.getSystem(EntitySystem.class).getEntities().size() + " players in the room.");
+			// BOMB = NO ENTITY !!
+			if (engine.getSystem(EntitySystem.class).getEntities().size() == 0) {
 				engine.setGameStarted(false);
 				ServerMessages.serverInfo.add("No players anymore in the game. The game is finished and people can again connect to the room.");
 			}
 		}
 
-		// Check server state: Room - Game - Finish 
-		// Add player comp for the state and to easy know how many players are connected
+		// Check server state: Room - Game - Finish
+		// Add player comp for the state and to easy know how many players are
+		// connected
 		// Because pwoerups/bombs are also entity in entitySystem
 		// Check size of array 1 entity = WIN
 		// Check size of array 0 entity = NEW GAME
@@ -117,7 +121,7 @@ public class MyServer extends Listener implements BombExplodeListener, PowerupLi
 			sync.bombID = e.getID();
 			sync.bombPos = new Vector2(bomb.pc.x, bomb.pc.y);
 			sync.entityID = bomb.ID;
-			server.sendToAllTCP(sync);
+			sendToAll(sync, ClientState.GAME, true);
 		}
 	}
 
@@ -127,7 +131,7 @@ public class MyServer extends Listener implements BombExplodeListener, PowerupLi
 			sync.entityID = entity.getID();
 			sync.posX = entity.getAs(PositionComponent.class).x;
 			sync.posY = entity.getAs(PositionComponent.class).y;
-			server.sendToAllUDP(sync);
+			sendToAll(sync, ClientState.GAME, false);
 		}
 	}
 
@@ -190,12 +194,12 @@ public class MyServer extends Listener implements BombExplodeListener, PowerupLi
 			PositionComponent entityPos = entity.getAs(PositionComponent.class);
 			if (hc == null || entityPos == null) continue;
 			Vector2 entityTilePos = map.getTilePositionWithAbsolutePosition(entityPos.x, entityPos.y);
-			
+
 			CollisionComponent cc = entity.getAs(CollisionComponent.class);
-			if(cc != null) {
+			if (cc != null) {
 				entityTilePos = map.getTilePositionWithAbsolutePosition(entityPos.x + cc.offset.x, entityPos.y + cc.offset.y);
 			}
-			
+
 			if (entityTilePos.x > minX && entityTilePos.x < maxX && entityTilePos.y == ty) {
 				if (hitEntityWithBomb(entity)) {
 					int entityID = entity.getID();
@@ -214,11 +218,11 @@ public class MyServer extends Listener implements BombExplodeListener, PowerupLi
 			}
 		}
 	}
-	
+
 	private void sendDeadSync(int entityID) {
 		DeadSync sync = new DeadSync();
 		sync.entityID = entityID;
-		server.sendToAllTCP(sync);
+		sendToAll(sync, ClientState.GAME, true);
 	}
 
 	private boolean hitEntityWithBomb(Entity e) {
@@ -234,7 +238,7 @@ public class MyServer extends Listener implements BombExplodeListener, PowerupLi
 		HealthSync sync = new HealthSync();
 		sync.entityID = e.getID();
 		sync.health = hc.health;
-		server.sendToAllTCP(sync);
+		sendToAll(sync, ClientState.GAME, true);
 		return isDead;
 	}
 
@@ -245,7 +249,7 @@ public class MyServer extends Listener implements BombExplodeListener, PowerupLi
 		ServerMessages.serverIncomming.add("Bomb n°" + e.getID() + " just explosed.");
 		BombExplodeSync sync = new BombExplodeSync();
 		sync.bombID = e.getID();
-		server.sendToAllTCP(sync);
+		sendToAll(sync, ClientState.GAME, true);
 	}
 
 	@Override
@@ -257,6 +261,16 @@ public class MyServer extends Listener implements BombExplodeListener, PowerupLi
 		sync.x = pc.x;
 		sync.y = pc.y;
 		sync.powComp = e.getAs(PowerupComponent.class);
-		server.sendToAllTCP(sync);
+		sendToAll(sync, ClientState.GAME, true);
+	}
+	
+	public void sendToAll(BaseSync sync, ClientState clientState, boolean useTcp) {
+		for (Entity entity : engine.getSystem(EntitySystem.class).getEntities().values()) {
+			ClientStateComponent csc = entity.getAs(ClientStateComponent.class);
+			if(csc == null) continue;
+			
+			if(useTcp) server.sendToTCP(entity.getID(), sync);
+			else server.sendToUDP(entity.getID(), sync);
+		}
 	}
 }

@@ -10,6 +10,7 @@ import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
 import com.esotericsoftware.kryonet.Server;
 import com.mda.bomb.ecs.components.BombAIComponent;
+import com.mda.bomb.ecs.components.CollisionComponent;
 import com.mda.bomb.ecs.components.HealthComponent;
 import com.mda.bomb.ecs.components.NameComponent;
 import com.mda.bomb.ecs.components.PositionComponent;
@@ -189,7 +190,12 @@ public class MyServer extends Listener implements BombExplodeListener, PowerupLi
 			PositionComponent entityPos = entity.getAs(PositionComponent.class);
 			if (hc == null || entityPos == null) continue;
 			Vector2 entityTilePos = map.getTilePositionWithAbsolutePosition(entityPos.x, entityPos.y);
-
+			
+			CollisionComponent cc = entity.getAs(CollisionComponent.class);
+			if(cc != null) {
+				entityTilePos = map.getTilePositionWithAbsolutePosition(entityPos.x + cc.offset.x, entityPos.y + cc.offset.y);
+			}
+			
 			if (entityTilePos.x > minX && entityTilePos.x < maxX && entityTilePos.y == ty) {
 				if (hitEntityWithBomb(entity)) {
 					int entityID = entity.getID();

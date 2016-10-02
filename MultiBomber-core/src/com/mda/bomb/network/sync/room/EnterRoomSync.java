@@ -19,7 +19,8 @@ public class EnterRoomSync extends BaseSync {
 
 	@Override
 	public void handleServer(MyServer server, Connection connection) {
-		// Check if the game has begun, if true send a sync to notify clients that a game is running
+		// Check if the game has begun, if true send a sync to notify clients
+		// that a game is running
 
 		Entity e = new Entity(connection.getID());
 		e.addComponent(new ReadyRoomComponent(false));
@@ -28,8 +29,7 @@ public class EnterRoomSync extends BaseSync {
 		e.addComponent(new ClientStateComponent(ClientState.ROOM));
 		entityID = e.getID();
 		ServerMessages.serverIncomming.add("Client with ConnectionID " + connectionID + " has now EntityID " + entityID);
-		ServerMessages.serverInfo
-				.add("There are actually " + server.getEngine().getSystem(EntitySystem.class).getEntities().size() + " players in the room.");
+		ServerMessages.serverInfo.add("There are actually " + server.getNumberOfPlayersWithState(ClientState.ROOM) + " players in the room.");
 		server.sendToAll(this, ClientState.ROOM, true);
 
 		// send the ready status to the new connection
@@ -47,6 +47,8 @@ public class EnterRoomSync extends BaseSync {
 
 	@Override
 	public void handleClient(MyClient client, Connection connection) {
+		System.out.println(client.getEntityID() + " getting enterroomSync for " + entityID);
+		
 		Entity e = new Entity(entityID);
 		e.addComponent(new ReadyRoomComponent(false));
 		e.addComponent(new NameComponent("Undefined"));

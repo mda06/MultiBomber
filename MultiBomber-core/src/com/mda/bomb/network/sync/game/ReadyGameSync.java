@@ -31,7 +31,6 @@ public class ReadyGameSync extends BaseSync {
 		server.sendToAll(this, ClientState.ROOM, true);
 		
 		//Init maps and everything
-		new InitMapSync().handleServer(server, connection);
 		server.getEngine().addSystem(new MovementSystem(server.getMap()));
 		server.getEngine().addSystem(new BombAISystem(server));
 		server.getEngine().addExternSystem(new PowerupSystem(server.getMap(), server));
@@ -75,6 +74,7 @@ public class ReadyGameSync extends BaseSync {
 			server.sendToAll(syncDir, ClientState.GAME, true);
 		}
 
+		new InitMapSync().handleServer(server, connection);
 		server.getEngine().setGameStarted(true);
 	}
 

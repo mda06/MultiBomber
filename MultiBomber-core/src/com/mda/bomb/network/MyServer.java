@@ -63,8 +63,7 @@ public class MyServer extends Listener implements BombExplodeListener, PowerupLi
 		try {
 			server.bind(Constants.PORT_TCP, Constants.PORT_UDP);
 			server.start();// Reduce size of arrays
-			ServerMessages.serverInfo
-					.add("Server launched on port TCP: " + Constants.PORT_TCP + ", UDP: " + Constants.PORT_UDP + " on IP: " + IPUtils.getMyIP());
+			ServerMessages.serverInfo.add("Server launched on port TCP: " + Constants.PORT_TCP + ", UDP: " + Constants.PORT_UDP + " on IP: " + IPUtils.getMyIP());
 		} catch (IOException e) {
 			ServerMessages.serverInfo.add("Exception when start server");
 		}
@@ -72,11 +71,11 @@ public class MyServer extends Listener implements BombExplodeListener, PowerupLi
 
 	public void updateEngine(float dt) {
 		engine.update(dt);
+		updateEntitiesToRemove();
 		if (engine.isGameStarted()) {
 			updateEntitiesInGame(dt);
 			updateBombQueue();
 			updateExplodedBombs();
-			updateEntitiesToRemove();
 		}
 	}
 
@@ -84,12 +83,16 @@ public class MyServer extends Listener implements BombExplodeListener, PowerupLi
 		Integer id = null;
 		while ((id = EntityQueue.pollEntityToRemove()) != null) {
 			engine.getSystem(EntitySystem.class).removeEntity(id);
-			ServerMessages.serverInfo
-					.add("There are actually " + engine.getSystem(EntitySystem.class).getEntities().size() + " players in the room.");
-			// BOMB = NO ENTITY !!
-			if (engine.getSystem(EntitySystem.class).getEntities().size() == 0) {
+			int nbInGame = getNumberOfPlayersWithState(ClientState.GAME);
+			ServerMessages.serverInfo.add("There are actually " + nbInGame + " players in the game.");
+			int nbInRoom = getNumberOfPlayersWithState(ClientState.ROOM);
+			if (nbInRoom != 0) ServerMessages.serverInfo.add("There are actually " + getNumberOfPlayersWithState(ClientState.ROOM) + " players in the room.");
+
+			if (nbInGame == 0) {
+				//TODO: Remove all engines that were used for the game
+				removeNonPlayersEntities();
 				engine.setGameStarted(false);
-				ServerMessages.serverInfo.add("No players anymore in the game. The game is finished and people can again connect to the room.");
+				ServerMessages.serverInfo.add("No players anymore in the game. The game is finished, a new game can be started.");
 			}
 		}
 
@@ -99,6 +102,15 @@ public class MyServer extends Listener implements BombExplodeListener, PowerupLi
 		// Because pwoerups/bombs are also entity in entitySystem
 		// Check size of array 1 entity = WIN
 		// Check size of array 0 entity = NEW GAME
+	}
+	
+	private void removeNonPlayersEntities() {
+		Iterator<Entry<Integer, Entity>> it = engine.getSystem(EntitySystem.class).getEntities().entrySet().iterator();
+		while (it.hasNext()) {
+			Entry<Integer, Entity> item = it.next();
+			ClientStateComponent csc = item.getValue().getAs(ClientStateComponent.class);
+			if (csc == null) it.remove();
+		}
 	}
 
 	private void updateExplodedBombs() {
@@ -127,6 +139,9 @@ public class MyServer extends Listener implements BombExplodeListener, PowerupLi
 
 	private void updateEntitiesInGame(float dt) {
 		for (Entity entity : engine.getSystem(EntitySystem.class).getEntities().values()) {
+			ClientStateComponent csc = entity.getAs(ClientStateComponent.class);
+			if (csc == null) continue;
+			if (csc.clientState != ClientState.GAME) continue;
 			EntitySync sync = new EntitySync();
 			sync.entityID = entity.getID();
 			sync.posX = entity.getAs(PositionComponent.class).x;
@@ -149,15 +164,15 @@ public class MyServer extends Listener implements BombExplodeListener, PowerupLi
 
 	@Override
 	public void connected(Connection connection) {
-		ServerMessages.serverInfo.add("New client connected, ID: " + connection.getID() + ", Info: " + connection.getRemoteAddressTCP()
-				+ ". Total connected : " + server.getConnections().length);
+		ServerMessages.serverInfo
+				.add("New client connected, ID: " + connection.getID() + ", Info: " + connection.getRemoteAddressTCP() + ". Total connected : " + server.getConnections().length);
 		if (ServerMessages.serverInfo.size > MAX_MESSAGES) ServerMessages.serverInfo.removeIndex(0);
 	}
 
 	@Override
 	public void disconnected(Connection connection) {
-		ServerMessages.serverInfo.add("Client disconnected, ID: " + connection.getID() + ", Info: " + connection.getRemoteAddressTCP()
-				+ ". Total connected : " + server.getConnections().length);
+		ServerMessages.serverInfo
+				.add("Client disconnected, ID: " + connection.getID() + ", Info: " + connection.getRemoteAddressTCP() + ". Total connected : " + server.getConnections().length);
 		DisconnectSync sync = new DisconnectSync();
 		sync.entityID = connection.getID();
 		sync.handleServer(this, connection);
@@ -190,6 +205,10 @@ public class MyServer extends Listener implements BombExplodeListener, PowerupLi
 		int minX = tx - ai.explodeSize, maxX = tx + ai.explodeSize;
 		int minY = ty - ai.explodeSize, maxY = ty + ai.explodeSize;
 		for (Entity entity : engine.getSystem(EntitySystem.class).getEntities().values()) {
+			ClientStateComponent csc = entity.getAs(ClientStateComponent.class);
+			if (csc == null) continue;
+			if (csc.clientState != ClientState.GAME) continue;
+
 			HealthComponent hc = entity.getAs(HealthComponent.class);
 			PositionComponent entityPos = entity.getAs(PositionComponent.class);
 			if (hc == null || entityPos == null) continue;
@@ -263,13 +282,24 @@ public class MyServer extends Listener implements BombExplodeListener, PowerupLi
 		sync.powComp = e.getAs(PowerupComponent.class);
 		sendToAll(sync, ClientState.GAME, true);
 	}
-	
+
+	public int getNumberOfPlayersWithState(ClientState state) {
+		int nb = 0;
+		for (Entity entity : engine.getSystem(EntitySystem.class).getEntities().values()) {
+			ClientStateComponent cs = entity.getAs(ClientStateComponent.class);
+			if (cs == null) continue;
+			if (cs.clientState == state) nb++;
+		}
+		return nb;
+	}
+
 	public void sendToAll(BaseSync sync, ClientState clientState, boolean useTcp) {
 		for (Entity entity : engine.getSystem(EntitySystem.class).getEntities().values()) {
 			ClientStateComponent csc = entity.getAs(ClientStateComponent.class);
-			if(csc == null) continue;
-			
-			if(useTcp) server.sendToTCP(entity.getID(), sync);
+			if (csc == null) continue;
+			if (csc.clientState != clientState) continue;
+
+			if (useTcp) server.sendToTCP(entity.getID(), sync);
 			else server.sendToUDP(entity.getID(), sync);
 		}
 	}

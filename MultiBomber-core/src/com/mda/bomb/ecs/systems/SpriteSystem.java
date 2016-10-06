@@ -107,6 +107,6 @@ public class SpriteSystem extends RenderSystem {
 					tr.getRegionHeight(), tr.getRegionX(), tr.getRegionY(), tr.getRegionWidth(), tr.getRegionHeight(),
 					true, false);
 		else
-			batch.draw(anim.getCurrentFrame(), pc.x - w / 2, pc.y - h / 2);
+			batch.draw(anim.getCurrentFrame(), pc.x - (w * sc.scaleX) / 2, pc.y - (h * sc.scaleY) / 2, tr.getRegionX(), tr.getRegionY(), tr.getRegionWidth(), tr.getRegionHeight(), sc.scaleX, sc.scaleY, sc.rotation);
 	}
 }

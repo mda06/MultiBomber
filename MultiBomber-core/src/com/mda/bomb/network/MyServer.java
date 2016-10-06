@@ -79,6 +79,10 @@ public class MyServer extends Listener implements BombExplodeListener, PowerupLi
 		}
 	}
 
+	private void updatePowerupCollision() {
+		
+	}
+	
 	private void updateEntitiesToRemove() {
 		Integer id = null;
 		while ((id = EntityQueue.pollEntityToRemove()) != null) {

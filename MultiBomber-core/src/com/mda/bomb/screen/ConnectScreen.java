@@ -61,7 +61,7 @@ public class ConnectScreen implements Screen, EnterRoomListener {
 		lblName.setColor(Color.RED);
 		stage.addActor(lblName);
 		
-		txtIP = new TextField("192.168.0.13", skin);
+		txtIP = new TextField("127.0.0.1", skin);
 		txtIP.setCenterPosition(Gdx.graphics.getWidth() / 2, Gdx.graphics.getHeight() / 2);
 		txtIP.setTextFieldFilter(new DigitFilter());
 		txtIP.addListener(new EventListener() {

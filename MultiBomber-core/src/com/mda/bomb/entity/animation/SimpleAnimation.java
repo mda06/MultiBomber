@@ -2,6 +2,7 @@ package com.mda.bomb.entity.animation;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.Texture.TextureFilter;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 
@@ -15,6 +16,7 @@ public class SimpleAnimation {
 		stateTime = 0;
 		frames = new TextureRegion[1];
 		frames[0] = new TextureRegion(new Texture(Gdx.files.internal(internalPath)));
+		frames[0].getTexture().setFilter(TextureFilter.Linear, TextureFilter.Linear);
 		animation = new Animation(0, frames);
 		update(0);
 	}
@@ -26,8 +28,10 @@ public class SimpleAnimation {
 	public SimpleAnimation(int nb_sprites, String internalPath, float animTime) {
 		stateTime = 0;
 		frames = new TextureRegion[nb_sprites];
-		for(int i = 0; i < nb_sprites; i++) 
+		for(int i = 0; i < nb_sprites; i++)  {
 			frames[i] = new TextureRegion(new Texture(Gdx.files.internal(internalPath + i + ".png")));
+			frames[i].getTexture().setFilter(TextureFilter.Linear, TextureFilter.Linear);
+		}
 		animation = new Animation(animTime, frames);
 		update(0);
 	}

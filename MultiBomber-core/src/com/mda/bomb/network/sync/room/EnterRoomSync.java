@@ -47,8 +47,6 @@ public class EnterRoomSync extends BaseSync {
 
 	@Override
 	public void handleClient(MyClient client, Connection connection) {
-		System.out.println(client.getEntityID() + " getting enterroomSync for " + entityID);
-		
 		Entity e = new Entity(entityID);
 		e.addComponent(new ReadyRoomComponent(false));
 		e.addComponent(new NameComponent("Undefined"));

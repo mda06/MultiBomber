@@ -13,15 +13,20 @@ public class SpriteComponent extends Component {
 	}
 	public HashMap<AnimationHash, SimpleAnimation> animations;
 	public AnimationHash oldAnim = null;
+	public float scaleX, scaleY, rotation;
 	
 	public SpriteComponent(int id) {
 		ID = id;
 		animations = new HashMap<AnimationHash, SimpleAnimation>();
+		scaleX = scaleY = 1;
+		rotation = 0;
 	}
 	
 	public SpriteComponent(SimpleAnimation anim) {
 		animations = new HashMap<AnimationHash, SimpleAnimation>();
 		animations.put(AnimationHash.ANIM_SIMPLE, anim);
+		scaleX = scaleY = 1;
+		rotation = 0;
 	}
  	
 	public void initAnimation() {

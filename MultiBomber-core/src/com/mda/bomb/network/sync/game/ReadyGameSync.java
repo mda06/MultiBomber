@@ -37,6 +37,10 @@ public class ReadyGameSync extends BaseSync {
 		
 		int i = 1;
 		for (Entity entity : server.getEngine().getSystem(EntitySystem.class).getEntities().values()) {
+			entity.getAs(ClientStateComponent.class).clientState = ClientState.GAME;
+		}
+		
+		for (Entity entity : server.getEngine().getSystem(EntitySystem.class).getEntities().values()) {
 			//Calculate the correct position for the entities...
 			entity.addComponent(new DirectionComponent());
 			entity.addComponent(new MovementComponent());
@@ -49,7 +53,6 @@ public class ReadyGameSync extends BaseSync {
 			//TODO: Add a sync for this, because the server and client have the same code for the moment
 			entity.addComponent(new DropBombComponent(10));
 			entity.addComponent(new HealthComponent(3));
-			entity.getAs(ClientStateComponent.class).clientState = ClientState.GAME;
 			
 			CollisionCompSync ccSync = new CollisionCompSync();
 			ccSync.entityID = entity.getID();

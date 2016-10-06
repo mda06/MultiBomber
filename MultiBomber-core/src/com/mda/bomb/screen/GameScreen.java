@@ -18,12 +18,14 @@ import com.mda.bomb.ecs.components.DirectionComponent;
 import com.mda.bomb.ecs.components.FlameComponent;
 import com.mda.bomb.ecs.components.PositionComponent;
 import com.mda.bomb.ecs.components.SpriteComponent;
+import com.mda.bomb.ecs.components.SpriteFeature;
 import com.mda.bomb.ecs.core.Entity;
 import com.mda.bomb.ecs.core.EntitySystem;
 import com.mda.bomb.ecs.systems.FlameSystem;
 import com.mda.bomb.ecs.systems.InputSystem;
 import com.mda.bomb.ecs.systems.MovementSystem;
 import com.mda.bomb.ecs.systems.NameSystem;
+import com.mda.bomb.ecs.systems.SpriteFeatureSystem;
 import com.mda.bomb.ecs.systems.SpriteSystem;
 import com.mda.bomb.entity.BombQueue;
 import com.mda.bomb.entity.EntityQueue;
@@ -61,6 +63,7 @@ public class GameScreen implements Screen, GameListener {
 			main.getClientSide().getEngine().addSystem(new FlameSystem());
 			main.getClientSide().getEngine().addSystem(new SpriteSystem());
 			main.getClientSide().getEngine().addSystem(new NameSystem());
+			main.getClientSide().getEngine().addSystem(new SpriteFeatureSystem());
 			main.getClientSide().getEngine().addSystem(new InputSystem(this));
 			// Test for less latency
 			main.getClientSide().getEngine().addSystem(new MovementSystem(map));
@@ -141,6 +144,7 @@ public class GameScreen implements Screen, GameListener {
 			Entity e = new Entity(bomb.ID);
 			e.addComponent(bomb.pc);
 			e.addComponent(new BombAIComponent());
+			e.addComponent(new SpriteFeature());
 			e.addComponent(new SpriteComponent(AnimationFactory.getBombAnimation()));
 		}
 	}

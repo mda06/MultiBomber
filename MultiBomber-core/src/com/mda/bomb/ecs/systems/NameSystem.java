@@ -26,7 +26,7 @@ public class NameSystem extends RenderSystem {
 		name = e.getAs(NameComponent.class);
 		cc = e.getAs(CollisionComponent.class);
 		hc = e.getAs(HealthComponent.class);
-		if(pc == null || name == null) return;
+		if(pc == null || name == null || cc == null) return;
 		
 		font.setColor(Color.WHITE);
 		drawCentred(batch, name.name, 0);
@@ -42,6 +42,6 @@ public class NameSystem extends RenderSystem {
 	}
 	
 	public void dispose() {
-		font.dispose();
+		//font.dispose();
 	}
 }
